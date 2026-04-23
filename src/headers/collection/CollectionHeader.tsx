@@ -82,6 +82,7 @@ export default function CollectionHeader({
   headerText = '#1a1a1a',
   onSearch,
   cartCount,
+  userAvatar,
 }: HeaderProps) {
   const theme = getCollectionTheme(headerBg, headerText)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -179,9 +180,22 @@ export default function CollectionHeader({
           href="/cart"
           className="text-sm no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#7c2d12]"
           style={{ color: theme.headerText, fontFamily: "'Instrument Sans', system-ui, sans-serif" }}
-          aria-label={cartCount && cartCount > 0 ? `Cart, ${cartCount} items` : 'Cart'}
+          aria-label={cartCount ? `Bag, ${cartCount} items` : 'Bag'}
         >
           Bag{cartCount && cartCount > 0 ? ` (${cartCount})` : ''}
+        </a>
+
+        <a
+          href="/account"
+          className="text-sm no-underline flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#7c2d12]"
+          style={{ color: theme.headerText, fontFamily: "'Instrument Sans', system-ui, sans-serif" }}
+          aria-label="Account"
+        >
+          {userAvatar ? (
+            <img src={userAvatar} alt="Account" className="w-6 h-6 object-cover" />
+          ) : (
+            'Account'
+          )}
         </a>
       </div>
     </header>

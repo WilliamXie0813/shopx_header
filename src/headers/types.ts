@@ -27,7 +27,7 @@ export interface DerivedColors {
 
 export interface ThemeConfig {
   accent: string
-  accentLight: string
+  accentLight?: string
   fontFamily?: string
   letterSpacing?: string
   fontWeight?: number

@@ -62,7 +62,7 @@ export function useDropdown(): UseDropdownReturn {
   )
 
   const handleClick = useCallback(
-    (e: React.MouseEvent) => {
+    () => {
       // Only toggle on click if not triggered by keyboard (which fires click too)
       // Or allow both - simpler to just toggle
       toggle()

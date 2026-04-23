@@ -2,8 +2,7 @@ import { deriveColors } from '../utils'
 import type { ThemeConfig } from '../types'
 
 export const luxeConfig: ThemeConfig = {
-  accent: '#c9a96e',       // Champagne gold
-  accentLight: '#f5f3ef',  // Warm white
+  accent: '#c9a96e', // Champagne gold
   fontFamily: "'Cormorant Garamond', serif",
   letterSpacing: '0.15em',
   fontWeight: 300,

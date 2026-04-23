@@ -113,7 +113,7 @@ export default function EssentialHeader({
           href="/cart"
           className="text-sm no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-500"
           style={{ color: theme.headerText }}
-          aria-label={cartCount && cartCount > 0 ? `Cart, ${cartCount} items` : 'Cart'}
+          aria-label={cartCount ? `Cart, ${cartCount} items` : 'Cart'}
         >
           Cart{cartCount && cartCount > 0 ? ` (${cartCount})` : ''}
         </a>

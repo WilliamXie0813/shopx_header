@@ -1,7 +1,66 @@
 import { useState } from 'react'
-import type { HeaderProps } from '../types'
+import type { HeaderProps, MenuItem } from '../types'
 import { getCardMarketTheme } from './card-market.theme'
 import { useDropdown } from '../hooks/useDropdown'
+
+function NavItem({ item, theme }: { item: MenuItem; theme: ReturnType<typeof getCardMarketTheme> }) {
+  const { isOpen, triggerProps, dropdownProps } = useDropdown()
+  const hasChildren = item.children && item.children.length > 0
+
+  return (
+    <div className="relative" {...dropdownProps}>
+      <button
+        {...(hasChildren ? triggerProps : {})}
+        className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors"
+        style={{ backgroundColor: 'transparent' }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.backgroundColor = theme.hoverBg
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'
+        }}
+      >
+        {item.icon && <span className="flex-shrink-0">{item.icon}</span>}
+        <span>{item.label}</span>
+      </button>
+
+      {hasChildren && isOpen && (
+        <div
+          className="absolute left-0 top-full z-50 mt-1 min-w-[12rem] rounded-lg border-2 py-1 shadow-xl"
+          style={{
+            backgroundColor: theme.dropdownBg,
+            borderColor: theme.accent,
+          }}
+        >
+          {item.children!.map((child) => (
+            <a
+              key={child.label}
+              href={child.href || '#'}
+              className="flex items-center gap-2 px-4 py-2 text-sm transition-colors no-underline"
+              style={{ color: theme.headerText }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLAnchorElement).style.backgroundColor = theme.hoverBg
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'transparent'
+              }}
+            >
+              {child.icon && <span className="flex-shrink-0">{child.icon}</span>}
+              <div>
+                <div className="font-medium">{child.label}</div>
+                {child.description && (
+                  <div className="text-xs" style={{ color: theme.textMuted }}>
+                    {child.description}
+                  </div>
+                )}
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function CardMarketHeader({
   logo,
@@ -38,70 +97,9 @@ export default function CardMarketHeader({
 
         {/* Game Nav */}
         <nav className="hidden items-center gap-1 md:flex">
-          {menuItems.map((item) => {
-            const { isOpen, triggerProps, dropdownProps } = useDropdown()
-            const hasChildren = item.children && item.children.length > 0
-
-            return (
-              <div
-                key={item.label}
-                className="relative"
-                {...dropdownProps}
-              >
-                <button
-                  {...(hasChildren ? triggerProps : {})}
-                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors"
-                  style={{
-                    backgroundColor: 'transparent',
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = theme.hoverBg
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'
-                  }}
-                >
-                  {item.icon && <span className="flex-shrink-0">{item.icon}</span>}
-                  <span>{item.label}</span>
-                </button>
-
-                {hasChildren && isOpen && (
-                  <div
-                    className="absolute left-0 top-full z-50 mt-1 min-w-[12rem] rounded-lg border-2 py-1 shadow-xl"
-                    style={{
-                      backgroundColor: theme.dropdownBg,
-                      borderColor: theme.accent,
-                    }}
-                  >
-                    {item.children!.map((child) => (
-                      <a
-                        key={child.label}
-                        href={child.href || '#'}
-                        className="flex items-center gap-2 px-4 py-2 text-sm transition-colors"
-                        style={{ color: theme.headerText }}
-                        onMouseEnter={(e) => {
-                          (e.currentTarget as HTMLAnchorElement).style.backgroundColor = theme.hoverBg
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'transparent'
-                        }}
-                      >
-                        {child.icon && <span className="flex-shrink-0">{child.icon}</span>}
-                        <div>
-                          <div className="font-medium">{child.label}</div>
-                          {child.description && (
-                            <div className="text-xs" style={{ color: theme.textMuted }}>
-                              {child.description}
-                            </div>
-                          )}
-                        </div>
-                      </a>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          })}
+          {menuItems.map((item) => (
+            <NavItem key={item.label} item={item} theme={theme} />
+          ))}
         </nav>
 
         {/* Search - Center, large, expandable */}
@@ -139,34 +137,50 @@ export default function CardMarketHeader({
           </div>
         </div>
 
-        {/* Right side: Avatar + Cart */}
+        {/* Right side: Account + Cart */}
         <div className="flex items-center gap-3">
-          {userAvatar && (
-            <div
-              className="relative h-9 w-9 flex-shrink-0 overflow-hidden rounded-full"
-              style={{
-                border: `2px solid ${theme.accent}`,
-              }}
-            >
+          {/* Account */}
+          <a
+            href="/account"
+            className="relative flex items-center justify-center overflow-hidden rounded-full no-underline"
+            style={{
+              width: '36px',
+              height: '36px',
+              border: userAvatar ? `2px solid ${theme.accent}` : 'none',
+            }}
+            aria-label="Account"
+          >
+            {userAvatar ? (
               <img
                 src={userAvatar}
-                alt="User avatar"
+                alt="Account"
                 className="h-full w-full object-cover"
               />
-            </div>
-          )}
+            ) : (
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            )}
+          </a>
 
           {/* Cart */}
-          <button
-            className="relative flex items-center justify-center rounded-md p-2 transition-colors"
+          <a
+            href="/cart"
+            className="relative flex items-center justify-center rounded-md p-2 transition-colors no-underline"
             style={{ backgroundColor: 'transparent' }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = theme.hoverBg
+              (e.currentTarget as HTMLAnchorElement).style.backgroundColor = theme.hoverBg
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'
+              (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'transparent'
             }}
-            aria-label={`Cart with ${cartCount} items`}
+            aria-label={cartCount ? `Cart, ${cartCount} items` : 'Cart'}
           >
             <svg
               className="h-6 w-6"
@@ -188,7 +202,7 @@ export default function CardMarketHeader({
                 {cartCount}
               </span>
             )}
-          </button>
+          </a>
         </div>
       </div>
     </header>

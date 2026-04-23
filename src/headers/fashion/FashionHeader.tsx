@@ -18,7 +18,7 @@ function Dropdown({ items, bgColor, textColor }: { items: MenuItem[]; bgColor: s
           <li key={idx}>
             <a
               href={child.href || '#'}
-              className="block text-sm no-underline py-1 hover:opacity-80"
+              className="block text-sm no-underline py-1 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#FF0080]"
               style={{ color: textColor }}
             >
               {child.label}
@@ -39,7 +39,7 @@ function NavItem({ item, theme }: { item: MenuItem; theme: ReturnType<typeof get
       <a
         href={item.href || '#'}
         {...(hasChildren ? triggerProps : {})}
-        className="block uppercase font-bold text-xs tracking-tight no-underline relative group px-4 py-3"
+        className="block uppercase font-bold text-xs tracking-tight no-underline relative group px-4 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#FF0080]"
         style={{ color: theme.headerText }}
       >
         {item.label}
@@ -89,7 +89,7 @@ export default function FashionHeader({
       <div className="flex items-center">
         <a
           href="/"
-          className="no-underline text-2xl font-bold tracking-tighter uppercase"
+          className="no-underline text-2xl font-bold tracking-tighter uppercase focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#FF0080]"
           style={{ color: theme.headerText }}
         >
           {logo}
@@ -113,7 +113,7 @@ export default function FashionHeader({
             value={searchValue}
             onChange={handleSearchChange}
             placeholder="SEARCH"
-            className="px-3 py-1.5 text-xs outline-none uppercase tracking-tight"
+            className="px-3 py-1.5 text-xs outline-none uppercase tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#FF0080]"
             style={{
               width: '160px',
               backgroundColor: `${theme.headerText}14`,
@@ -124,8 +124,9 @@ export default function FashionHeader({
 
         <a
           href="/cart"
-          className="text-sm no-underline relative flex items-center"
+          className="text-sm no-underline relative flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#FF0080]"
           style={{ color: theme.headerText }}
+          aria-label={cartCount ? `Cart, ${cartCount} items` : 'Cart'}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -155,8 +156,9 @@ export default function FashionHeader({
 
         <a
           href="/account"
-          className="text-sm no-underline flex items-center"
+          className="text-sm no-underline flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#FF0080]"
           style={{ color: theme.headerText }}
+          aria-label="Account"
         >
           {userAvatar ? (
             <img src={userAvatar} alt="Account" className="w-7 h-7 object-cover rounded-full" />

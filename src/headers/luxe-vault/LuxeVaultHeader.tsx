@@ -63,6 +63,90 @@ function ChevronDown({ className }: { className?: string }) {
   )
 }
 
+function NavItem({ item, theme }: { item: MenuItem; theme: ReturnType<typeof getLuxeTheme> }) {
+  const { isOpen, triggerProps, dropdownProps } = useDropdown()
+  const hasChildren = item.children && item.children.length > 0
+
+  return (
+    <div className="relative" {...dropdownProps}>
+      <a
+        href={item.href || '#'}
+        {...(hasChildren ? triggerProps : {})}
+        className="relative flex items-center gap-1 uppercase text-[11px] tracking-[0.15em] font-light px-6 py-4 transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a96e] focus-visible:ring-offset-2"
+        style={{ color: theme.headerText }}
+        onClick={(e) => {
+          if (hasChildren) {
+            e.preventDefault()
+          }
+        }}
+      >
+        {item.label}
+        {hasChildren && (
+          <ChevronDown
+            className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+          />
+        )}
+        {/* Gold underline */}
+        <span
+          className="absolute bottom-2 left-1/2 -translate-x-1/2 h-px w-8 origin-center transition-transform duration-500"
+          style={{
+            backgroundColor: theme.accent,
+            transform: 'translateX(-50%) scaleX(0)',
+          }}
+          onMouseEnter={(e) => {
+            const target = e.currentTarget
+            target.style.transform = 'translateX(-50%) scaleX(1)'
+          }}
+          onMouseLeave={(e) => {
+            const target = e.currentTarget
+            target.style.transform = 'translateX(-50%) scaleX(0)'
+          }}
+        />
+      </a>
+
+      {/* Full-width dropdown curtain */}
+      {hasChildren && isOpen && (
+        <div
+          className="fixed left-0 w-full z-40 border-t"
+          style={{
+            backgroundColor: theme.dropdownBg,
+            borderColor: theme.accent,
+            top: 'auto',
+          }}
+          data-testid="luxe-dropdown"
+        >
+          <div className="max-w-6xl mx-auto px-8 py-12">
+            <div className="grid grid-cols-3 gap-12">
+              {item.children!.map((child) => (
+                <a
+                  key={child.label}
+                  href={child.href || '#'}
+                  className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a96e] focus-visible:ring-offset-2"
+                >
+                  <span
+                    className="block uppercase text-[11px] tracking-[0.15em] font-light mb-2 transition-colors duration-300 group-hover:text-[#c9a96e]"
+                    style={{ color: theme.headerText }}
+                  >
+                    {child.label}
+                  </span>
+                  {child.description && (
+                    <span
+                      className="block text-[10px] tracking-[0.1em] font-light"
+                      style={{ color: theme.textMuted }}
+                    >
+                      {child.description}
+                    </span>
+                  )}
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function LuxeVaultHeader({
   logo,
   menuItems,
@@ -70,6 +154,7 @@ export default function LuxeVaultHeader({
   headerText,
   onSearch,
   cartCount,
+  userAvatar,
 }: HeaderProps) {
   const theme = getLuxeTheme(headerBg, headerText)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -124,7 +209,7 @@ export default function LuxeVaultHeader({
           <button
             type="button"
             onClick={() => setSearchOpen((prev) => !prev)}
-            className="transition-opacity duration-300 hover:opacity-70"
+            className="transition-opacity duration-300 hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a96e] focus-visible:ring-offset-2"
             aria-label="Search"
             data-testid="luxe-search-btn"
           >
@@ -132,10 +217,10 @@ export default function LuxeVaultHeader({
           </button>
 
           {/* Cart */}
-          <button
-            type="button"
-            className="relative transition-opacity duration-300 hover:opacity-70"
-            aria-label="Cart"
+          <a
+            href="/cart"
+            className="relative transition-opacity duration-300 hover:opacity-70 no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a96e] focus-visible:ring-offset-2"
+            aria-label={hasCart ? `Cart, ${cartCount} items` : 'Cart'}
             data-testid="luxe-cart-btn"
           >
             <CartIcon />
@@ -146,7 +231,33 @@ export default function LuxeVaultHeader({
                 data-testid="luxe-cart-dot"
               />
             )}
-          </button>
+          </a>
+
+          {/* Account */}
+          <a
+            href="/account"
+            className="relative transition-opacity duration-300 hover:opacity-70 no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a96e] focus-visible:ring-offset-2"
+            aria-label="Account"
+          >
+            {userAvatar ? (
+              <img src={userAvatar} alt="Account" className="w-5 h-5 object-cover rounded-full" />
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            )}
+          </a>
         </div>
       </div>
 
@@ -165,7 +276,7 @@ export default function LuxeVaultHeader({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="SEARCH..."
-              className="w-full bg-transparent outline-none uppercase text-[11px] tracking-[0.15em] font-light"
+              className="w-full bg-transparent outline-none uppercase text-[11px] tracking-[0.15em] font-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a96e] focus-visible:ring-offset-2"
               style={{
                 color: theme.headerText,
                 fontFamily: theme.fontFamily,
@@ -182,93 +293,9 @@ export default function LuxeVaultHeader({
         className="flex items-center justify-center border-t"
         style={{ borderColor: theme.border }}
       >
-        {menuItems.map((item: MenuItem) => {
-          const { isOpen, triggerProps, dropdownProps } = useDropdown()
-          const hasChildren = item.children && item.children.length > 0
-
-          return (
-            <div
-              key={item.label}
-              className="relative"
-              {...dropdownProps}
-            >
-              <a
-                href={item.href || '#'}
-                {...(hasChildren ? triggerProps : {})}
-                className="relative flex items-center gap-1 uppercase text-[11px] tracking-[0.15em] font-light px-6 py-4 transition-colors duration-300"
-                style={{ color: theme.headerText }}
-                onClick={(e) => {
-                  if (hasChildren) {
-                    e.preventDefault()
-                  }
-                }}
-              >
-                {item.label}
-                {hasChildren && (
-                  <ChevronDown
-                    className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
-                  />
-                )}
-                {/* Gold underline */}
-                <span
-                  className="absolute bottom-2 left-1/2 -translate-x-1/2 h-px w-8 origin-center transition-transform duration-500"
-                  style={{
-                    backgroundColor: theme.accent,
-                    transform: 'translateX(-50%) scaleX(0)',
-                  }}
-                  onMouseEnter={(e) => {
-                    const target = e.currentTarget
-                    target.style.transform = 'translateX(-50%) scaleX(1)'
-                  }}
-                  onMouseLeave={(e) => {
-                    const target = e.currentTarget
-                    target.style.transform = 'translateX(-50%) scaleX(0)'
-                  }}
-                />
-              </a>
-
-              {/* Full-width dropdown curtain */}
-              {hasChildren && isOpen && (
-                <div
-                  className="fixed left-0 w-full z-40 border-t"
-                  style={{
-                    backgroundColor: theme.dropdownBg,
-                    borderColor: theme.accent,
-                    top: 'auto',
-                  }}
-                  data-testid="luxe-dropdown"
-                >
-                  <div className="max-w-6xl mx-auto px-8 py-12">
-                    <div className="grid grid-cols-3 gap-12">
-                      {item.children!.map((child) => (
-                        <a
-                          key={child.label}
-                          href={child.href || '#'}
-                          className="group block"
-                        >
-                          <span
-                            className="block uppercase text-[11px] tracking-[0.15em] font-light mb-2 transition-colors duration-300 group-hover:text-[#c9a96e]"
-                            style={{ color: theme.headerText }}
-                          >
-                            {child.label}
-                          </span>
-                          {child.description && (
-                            <span
-                              className="block text-[10px] tracking-[0.1em] font-light"
-                              style={{ color: theme.textMuted }}
-                            >
-                              {child.description}
-                            </span>
-                          )}
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )
-        })}
+        {menuItems.map((item: MenuItem) => (
+          <NavItem key={item.label} item={item} theme={theme} />
+        ))}
       </nav>
     </header>
   )

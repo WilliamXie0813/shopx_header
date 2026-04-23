@@ -42,7 +42,13 @@ describe('CardMarketHeader', () => {
   it('renders user avatar if provided', () => {
     render(<CardMarketHeader {...defaultProps} userAvatar="https://example.com/avatar.png" />)
 
-    expect(screen.getByAltText('User avatar')).toBeInTheDocument()
-    expect(screen.getByAltText('User avatar')).toHaveAttribute('src', 'https://example.com/avatar.png')
+    expect(screen.getByLabelText('Account')).toBeInTheDocument()
+    expect(screen.getByAltText('Account')).toHaveAttribute('src', 'https://example.com/avatar.png')
+  })
+
+  it('renders account icon when no avatar is provided', () => {
+    render(<CardMarketHeader {...defaultProps} />)
+
+    expect(screen.getByLabelText('Account')).toBeInTheDocument()
   })
 })

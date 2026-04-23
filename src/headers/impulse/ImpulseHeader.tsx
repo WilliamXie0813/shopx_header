@@ -6,15 +6,15 @@ import { useDropdown } from '../hooks/useDropdown'
 function Dropdown({ items, bgColor, textColor }: { items: MenuItem[]; bgColor: string; textColor: string }) {
   return (
     <ul
-      className="absolute left-0 top-full min-w-[160px] py-2 list-none m-0 p-0 shadow-lg z-50"
+      className="absolute left-0 top-full min-w-[180px] py-2 list-none m-0 p-0 shadow-lg z-50"
       style={{ backgroundColor: bgColor, color: textColor }}
     >
       {items.map((child, idx) => (
         <li key={idx}>
           <a
             href={child.href || '#'}
-            className="block px-4 py-2 text-sm no-underline hover:opacity-80 transition-opacity duration-150"
-            style={{ color: textColor }}
+            className="block px-4 py-2 text-[10px] uppercase tracking-[0.06em] no-underline hover:opacity-80 transition-opacity duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#e53935]"
+            style={{ color: textColor, fontWeight: 500, fontFamily: "'Oswald', 'Bebas Neue', 'Arial Narrow', 'Impact', sans-serif" }}
           >
             {child.label}
           </a>
@@ -31,10 +31,10 @@ function NavItem({ item, theme }: { item: MenuItem; theme: ReturnType<typeof get
   return (
     <li className="relative" {...dropdownProps}>
       <a
-        href={item.href || '#'}
+        href={item.href || '#' }
         {...(hasChildren ? triggerProps : {})}
-        className="block px-3 py-2 text-sm font-semibold no-underline transition-colors duration-150"
-        style={{ color: theme.headerText }}
+        className="block px-3 py-2 text-[10px] uppercase tracking-[0.08em] no-underline transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#e53935]"
+        style={{ color: theme.headerText, fontWeight: 600 }}
       >
         {item.label}
       </a>
@@ -71,8 +71,8 @@ export default function ImpulseHeader({
     <div>
       {/* Promo Banner */}
       <div
-        className="w-full flex items-center justify-center py-2 text-xs font-bold uppercase tracking-wide text-white"
-        style={{ backgroundColor: theme.accent, height: '36px' }}
+        className="w-full flex items-center justify-center py-2 text-xs font-black uppercase tracking-[0.15em] text-white"
+        style={{ backgroundColor: theme.accent, height: '36px', fontFamily: "'Oswald', 'Bebas Neue', 'Arial Narrow', 'Impact', sans-serif" }}
         data-testid="promo-banner"
       >
         ⚡ LIMITED TIME: 50% OFF EVERYTHING — ENDS IN 02:14:33
@@ -80,24 +80,28 @@ export default function ImpulseHeader({
 
       {/* Main Header */}
       <header
-        className="grid grid-cols-3 items-center px-6 py-4"
+        className="grid grid-cols-3 items-center px-6 py-2"
         style={{
           backgroundColor: theme.headerBg,
           color: theme.headerText,
-          fontFamily: '-apple-system, Segoe UI, Roboto, sans-serif',
+          fontFamily: "'Oswald', 'Bebas Neue', 'Arial Narrow', 'Impact', sans-serif",
         }}
         data-testid="main-header"
       >
         {/* Logo */}
         <div className="flex items-center">
-          <a href="/" className="no-underline" style={{ color: theme.headerText }}>
+          <a
+            href="/"
+            className="no-underline text-2xl uppercase tracking-tighter focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#e53935]"
+            style={{ color: theme.headerText, fontWeight: 700 }}
+          >
             {logo}
           </a>
         </div>
 
         {/* Nav */}
         <nav className="flex justify-center">
-          <ul className="flex list-none m-0 p-0 gap-1">
+          <ul className="flex list-none m-0 p-0 gap-0">
             {menuItems.map((item, idx) => (
               <NavItem key={idx} item={item} theme={theme} />
             ))}
@@ -105,15 +109,15 @@ export default function ImpulseHeader({
         </nav>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-4">
+        <div className="flex items-center justify-end gap-2">
           {onSearch && (
             <div className="relative flex items-center">
               <svg
-                className="absolute left-2 w-4 h-4 pointer-events-none"
+                className="absolute left-2 w-3 h-3 pointer-events-none"
                 style={{ color: theme.textMuted }}
                 fill="none"
                 stroke="currentColor"
-                strokeWidth={2}
+                strokeWidth={2.5}
                 viewBox="0 0 24 24"
               >
                 <circle cx="11" cy="11" r="8" />
@@ -123,28 +127,30 @@ export default function ImpulseHeader({
                 type="text"
                 value={searchValue}
                 onChange={handleSearchChange}
-                placeholder="Search"
-                className="pl-8 pr-3 py-1.5 text-sm outline-none border transition-colors duration-150"
+                placeholder="SEARCH"
+                className="pl-6 pr-2 py-1 text-[10px] uppercase tracking-wide outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#e53935]"
                 style={{
-                  width: '280px',
-                  borderColor: theme.border,
+                  width: '120px',
+                  backgroundColor: `${headerText}0f`,
                   color: theme.headerText,
-                  backgroundColor: theme.headerBg,
+                  fontFamily: "'Oswald', 'Bebas Neue', 'Arial Narrow', 'Impact', sans-serif",
                 }}
               />
             </div>
           )}
 
+          {/* Cart — filled pill button */}
           <a
             href="/cart"
-            className="relative text-sm no-underline flex items-center"
-            style={{ color: theme.headerText }}
+            className="relative flex items-center gap-1 rounded-full px-3 py-1 text-[10px] uppercase tracking-wide no-underline transition-opacity duration-150 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#e53935]"
+            style={{ backgroundColor: theme.accent, color: '#ffffff', fontWeight: 600 }}
+            aria-label={cartCount ? `Cart, ${cartCount} items` : 'Cart'}
           >
             <svg
-              className="w-5 h-5"
+              className="w-3.5 h-3.5"
               fill="none"
               stroke="currentColor"
-              strokeWidth={2}
+              strokeWidth={2.5}
               viewBox="0 0 24 24"
             >
               <path d="M6 6h15l-1.5 9h-12z" />
@@ -153,25 +159,33 @@ export default function ImpulseHeader({
               <path d="M6 6L5 3H2" />
             </svg>
             {typeof cartCount === 'number' && cartCount > 0 && (
-              <span
-                className="absolute -top-2 -right-3 text-xs font-bold text-white rounded-full flex items-center justify-center px-1.5 py-0.5 min-w-[20px]"
-                style={{ backgroundColor: theme.accent }}
-                data-testid="cart-badge"
-              >
-                {cartCount}
-              </span>
+              <span className="text-[10px]">{cartCount}</span>
             )}
           </a>
 
+          {/* Account — filled accent icon button */}
           <a
             href="/account"
-            className="text-sm no-underline flex items-center"
-            style={{ color: theme.headerText }}
+            className="flex items-center justify-center rounded-full w-7 h-7 no-underline transition-opacity duration-150 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#e53935]"
+            style={{
+              backgroundColor: theme.accent,
+              color: '#ffffff',
+            }}
+            aria-label="Account"
           >
             {userAvatar ? (
-              <img src={userAvatar} alt="Account" className="w-6 h-6 object-cover" />
+              <img src={userAvatar} alt="Account" className="w-full h-full object-cover rounded-full" />
             ) : (
-              'Account'
+              <svg
+                className="w-3.5 h-3.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.5}
+                viewBox="0 0 24 24"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
             )}
           </a>
         </div>
