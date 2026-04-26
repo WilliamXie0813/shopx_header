@@ -1,0 +1,6 @@
+export { default as CenteredHeader } from './CenteredHeader'
+export { default as FloatingHeader } from './FloatingHeader'
+export { default as LuxeValutHeader } from './LuxeValutHeader'
+export { default as MegaHeader } from './MegaHeader'
+export { default as MarketplaceHeader } from './MarketplaceHeader'
+export { default as StickyCompactHeader } from './StickyCompactHeader'
