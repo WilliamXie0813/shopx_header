@@ -419,32 +419,32 @@ export default function Demo() {
             </ThemeProvider>
           </div>
 
-      {/* Page content skeleton */}
-      <div
-        className="flex-1 px-8 py-5 min-h-0 transition-opacity duration-150"
-        style={{ opacity: transitioning ? 0 : 1 }}
-      >
-        {slide.id !== 'sticky' && (
-          <SkeletonGrid isDark={isDark} />
-        )}
+          {/* Page content skeleton */}
+          <div
+            className="flex-1 px-8 py-5 min-h-0 transition-opacity duration-150"
+            style={{ opacity: transitioning ? 0 : 1 }}
+          >
+            {slide.id !== 'sticky' && (
+              <SkeletonGrid isDark={isDark} />
+            )}
 
-        {slide.id === 'sticky' && (
-          <div className="h-full overflow-auto">
-            <div className="max-w-3xl mx-auto">
-              <p className="text-sm mb-4" style={{ color: isDark ? '#888' : '#6b7280' }}>
-                Scroll down to see the header compact automatically.
-              </p>
-              <div className="space-y-4">
-                {Array.from({ length: 30 }).map((_, i) => (
-                  <p key={i} className="text-sm leading-relaxed" style={{ color: isDark ? '#555' : '#d1d5db' }}>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.
+            {slide.id === 'sticky' && (
+              <div className="h-full overflow-auto">
+                <div className="max-w-3xl mx-auto">
+                  <p className="text-sm mb-4" style={{ color: isDark ? '#888' : '#6b7280' }}>
+                    Scroll down to see the header compact automatically.
                   </p>
-                ))}
+                  <div className="space-y-4">
+                    {Array.from({ length: 30 }).map((_, i) => (
+                      <p key={i} className="text-sm leading-relaxed" style={{ color: isDark ? '#555' : '#d1d5db' }}>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.
+                      </p>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
-        )}
-      </div>
 
         {/* Bottom navigation */}
         <div className="flex-none px-8 py-4 relative z-10">
