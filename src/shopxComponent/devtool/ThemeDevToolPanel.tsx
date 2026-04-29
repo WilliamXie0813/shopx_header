@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
-import { X } from 'lucide-react'
+import { X, Palette } from 'lucide-react'
 import TokenEditor from './TokenEditor'
 import useKeyboardShortcut from './useKeyboardShortcut'
 import { useThemeDevTool } from './ThemeDevToolProvider'
@@ -76,7 +76,23 @@ export default function ThemeDevToolPanel({ initialOpen = false }: { initialOpen
     [theme]
   )
 
-  if (!isOpen) return null
+  if (!isOpen) {
+    return (
+      <button
+        onClick={toggle}
+        aria-label="Open Theme DevTool"
+        className="fixed z-[100] p-3 rounded-full shadow-lg transition-all hover:scale-105"
+        style={{
+          right: '16px',
+          bottom: '16px',
+          backgroundColor: '#3b82f6',
+          color: '#ffffff',
+        }}
+      >
+        <Palette size={20} />
+      </button>
+    )
+  }
 
   return (
     <div
