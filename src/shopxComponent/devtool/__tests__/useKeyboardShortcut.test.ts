@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
-import useKeyboardShortcut from './useKeyboardShortcut'
+import useKeyboardShortcut from '../useKeyboardShortcut'
 
 describe('useKeyboardShortcut', () => {
   const onToggle = vi.fn()

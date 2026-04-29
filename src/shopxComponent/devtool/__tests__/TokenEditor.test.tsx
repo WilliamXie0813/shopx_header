@@ -1,11 +1,11 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import TokenEditor from './TokenEditor'
-import { defaultTheme } from '../theme/ThemeContext'
+import TokenEditor from '../TokenEditor'
+import { defaultTheme } from '../../theme/types'
 
 describe('TokenEditor (devtool)', () => {
   it('renders all color fields', () => {
-    render(<TokenEditor theme={defaultTheme} onChange={vi.fn()} onReset={vi.fn()} />)
+    render(<TokenEditor theme={defaultTheme} onChange={vi.fn()} />)
 
     expect(screen.getByText('Colors')).toBeInTheDocument()
     expect(screen.getByText('primary')).toBeInTheDocument()
@@ -21,7 +21,7 @@ describe('TokenEditor (devtool)', () => {
   })
 
   it('renders typography font family inputs', () => {
-    render(<TokenEditor theme={defaultTheme} onChange={vi.fn()} onReset={vi.fn()} />)
+    render(<TokenEditor theme={defaultTheme} onChange={vi.fn()} />)
 
     expect(screen.getByText('Typography')).toBeInTheDocument()
     expect(screen.getByLabelText(/heading font/i)).toBeInTheDocument()
@@ -29,14 +29,14 @@ describe('TokenEditor (devtool)', () => {
   })
 
   it('renders font size inputs', () => {
-    render(<TokenEditor theme={defaultTheme} onChange={vi.fn()} onReset={vi.fn()} />)
+    render(<TokenEditor theme={defaultTheme} onChange={vi.fn()} />)
 
     expect(screen.getByLabelText(/font size xs/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/font size base/i)).toBeInTheDocument()
   })
 
   it('renders spacing inputs', () => {
-    render(<TokenEditor theme={defaultTheme} onChange={vi.fn()} onReset={vi.fn()} />)
+    render(<TokenEditor theme={defaultTheme} onChange={vi.fn()} />)
 
     expect(screen.getByText('Spacing')).toBeInTheDocument()
     expect(screen.getByLabelText(/spacing xs/i)).toBeInTheDocument()
@@ -44,7 +44,7 @@ describe('TokenEditor (devtool)', () => {
   })
 
   it('renders border radius inputs', () => {
-    render(<TokenEditor theme={defaultTheme} onChange={vi.fn()} onReset={vi.fn()} />)
+    render(<TokenEditor theme={defaultTheme} onChange={vi.fn()} />)
 
     expect(screen.getByText('Border Radius')).toBeInTheDocument()
     expect(screen.getByLabelText(/border radius sm/i)).toBeInTheDocument()
@@ -52,7 +52,7 @@ describe('TokenEditor (devtool)', () => {
 
   it('calls onChange when a color is edited', () => {
     const onChange = vi.fn()
-    render(<TokenEditor theme={defaultTheme} onChange={onChange} onReset={vi.fn()} />)
+    render(<TokenEditor theme={defaultTheme} onChange={onChange} />)
 
     const primaryInputs = screen.getAllByDisplayValue('#3b82f6')
     const textInput = primaryInputs.find((el) => el.getAttribute('type') === 'text')
@@ -64,7 +64,7 @@ describe('TokenEditor (devtool)', () => {
 
   it('calls onChange when font size is edited', () => {
     const onChange = vi.fn()
-    render(<TokenEditor theme={defaultTheme} onChange={onChange} onReset={vi.fn()} />)
+    render(<TokenEditor theme={defaultTheme} onChange={onChange} />)
 
     const input = screen.getByLabelText(/font size base/i)
     fireEvent.change(input, { target: { value: '1.25rem' } })

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import CollectionHeader from './CollectionHeader'
+import CollectionHeader from '../CollectionHeader'
 
 describe('CollectionHeader', () => {
   const defaultProps = {

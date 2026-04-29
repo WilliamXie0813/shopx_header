@@ -1,5 +1,5 @@
 import ColorField from './ColorField'
-import type { ThemeTokens } from './theme/ThemeContext'
+import type { ThemeTokens } from './theme/types'
 import type { HeaderConfig } from './types/header'
 
 interface TokenEditorProps {

@@ -1,12 +1,7 @@
-import Demo from './shopxComponent/Demo'
-import ThemeDevToolProvider from './shopxComponent/devtool/ThemeDevToolProvider'
+import Demo from "./shopxComponent/Demo";
 
 function App() {
-  return (
-    <ThemeDevToolProvider>
-      <Demo />
-    </ThemeDevToolProvider>
-  )
+	return <Demo />;
 }
 
-export default App
+export default App;

@@ -1,8 +1,9 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { useContext } from 'react'
-import ThemeDevToolProvider, { useThemeDevTool } from './ThemeDevToolProvider'
-import { ThemeContext, defaultTheme } from '../theme/ThemeContext'
+import ThemeDevToolProvider from '../ThemeDevToolProvider'
+import { useThemeDevTool } from '../../theme/devtoolContext'
+import { ThemeContext } from '../../theme/ThemeContext'
 
 function ThemeConsumer() {
   const theme = useContext(ThemeContext)

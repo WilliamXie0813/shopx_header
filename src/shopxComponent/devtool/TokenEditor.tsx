@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import ColorField from '../ColorField'
-import type { ThemeTokens } from '../theme/ThemeContext'
+import type { ThemeTokens } from '../theme/types'
 
 interface TokenEditorProps {
   theme: ThemeTokens

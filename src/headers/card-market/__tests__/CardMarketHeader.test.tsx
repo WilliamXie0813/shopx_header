@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
-import CardMarketHeader from './CardMarketHeader'
+import CardMarketHeader from '../CardMarketHeader'
 
 describe('CardMarketHeader', () => {
   const defaultProps = {

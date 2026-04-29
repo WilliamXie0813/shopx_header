@@ -1,4 +1,5 @@
 export * from './headers'
 export * from './types/header'
-export { ThemeProvider, useTheme, defaultTheme } from './theme/ThemeContext'
-export type { ThemeTokens } from './theme/ThemeContext'
+export { ThemeProvider, useTheme } from './theme/ThemeContext'
+export { defaultTheme } from './theme/types'
+export type { ThemeTokens } from './theme/types'

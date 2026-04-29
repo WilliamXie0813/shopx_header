@@ -2,8 +2,9 @@ import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { X, Palette, GripHorizontal } from 'lucide-react'
 import TokenEditor from './TokenEditor'
 import useKeyboardShortcut from './useKeyboardShortcut'
-import { useThemeDevTool } from './ThemeDevToolProvider'
+import { useThemeDevTool } from '../theme/devtoolContext'
 import { useTheme } from '../theme/ThemeContext'
+import type { ThemeTokens } from '../theme/types'
 
 function getShortcutHint(): string {
   return navigator.platform.toLowerCase().includes('mac') ? '⌘⇧T' : 'Ctrl+Shift+T'
@@ -36,7 +37,7 @@ function stringifyTs(obj: unknown, indent = 2): string {
 }
 
 function themeToCode(theme: ReturnType<typeof useTheme>): string {
-  return `import type { ThemeTokens } from '../theme/ThemeContext'\n\nexport const defaultTheme: ThemeTokens = ${stringifyTs(theme)}`
+  return `import type { ThemeTokens } from '../theme/types'\n\nexport const defaultTheme: ThemeTokens = ${stringifyTs(theme)}`
 }
 
 export default function ThemeDevToolPanel({ initialOpen = false }: { initialOpen?: boolean }) {

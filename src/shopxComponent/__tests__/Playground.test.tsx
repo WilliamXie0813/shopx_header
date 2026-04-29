@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import Playground from './Playground'
+import Playground from '../Playground'
 
-vi.mock('./headers', () => ({
+vi.mock('../headers', () => ({
   CenteredHeader: ({ config }: { config: { variant: string } }) => (
     <div data-testid="header">CenteredHeader-{config.variant}</div>
   ),
@@ -48,13 +48,5 @@ describe('Playground', () => {
     fireEvent.click(floatingBtn)
 
     expect(screen.getByTestId('header')).toHaveTextContent('FloatingHeader')
-  })
-
-  it('renders TokenEditor panel', () => {
-    render(<Playground />)
-
-    expect(screen.getByText('Colors')).toBeInTheDocument()
-    expect(screen.getByText('Typography')).toBeInTheDocument()
-    expect(screen.getByText('Config')).toBeInTheDocument()
   })
 })

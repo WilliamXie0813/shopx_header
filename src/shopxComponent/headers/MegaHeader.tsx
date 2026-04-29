@@ -4,32 +4,6 @@ import type { HeaderProps, NavigationItem } from '../types/header'
 import { useTheme } from '../theme/ThemeContext'
 import { useDropdown } from '../hooks/useDropdown'
 
-function Dropdown({ items }: { items: NavigationItem[] }) {
-  const theme = useTheme()
-  return (
-    <ul
-      className="absolute left-0 top-full min-w-[160px] py-2 list-none m-0 p-0 z-50 shadow-lg"
-      style={{
-        backgroundColor: theme.colors.surface,
-        borderRadius: theme.borderRadius.md,
-        border: `1px solid ${theme.colors.border}`,
-      }}
-    >
-      {items.map((child, idx) => (
-        <li key={idx}>
-          <a
-            href={child.href || '#'}
-            className="block px-4 py-2 text-sm no-underline hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-            style={{ color: theme.colors.text }}
-          >
-            {child.label}
-          </a>
-        </li>
-      ))}
-    </ul>
-  )
-}
-
 function MegaDropdown({ item, dropdownProps, isOpen }: { item: NavigationItem; dropdownProps: { onMouseEnter: () => void; onMouseLeave: () => void }; isOpen: boolean }) {
   const theme = useTheme()
   const children = item.children || []

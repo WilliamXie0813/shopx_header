@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import TokenEditor from './TokenEditor'
-import { defaultTheme } from './theme/ThemeContext'
-import type { HeaderConfig } from './types/header'
+import TokenEditor from '../TokenEditor'
+import { defaultTheme } from '../theme/types'
+import type { HeaderConfig } from '../types/header'
 
 const mockConfig: HeaderConfig = {
   type: 'header',

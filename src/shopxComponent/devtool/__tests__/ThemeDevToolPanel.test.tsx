@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import ThemeDevToolPanel from './ThemeDevToolPanel'
-import ThemeDevToolProvider from './ThemeDevToolProvider'
+import ThemeDevToolPanel from '../ThemeDevToolPanel'
+import ThemeDevToolProvider from '../ThemeDevToolProvider'
 
 // Mock clipboard API
 Object.assign(navigator, {
@@ -68,7 +68,7 @@ describe('ThemeDevToolPanel', () => {
       </ThemeDevToolProvider>
     )
 
-    const exportBtn = screen.getByRole('button', { name: /export theme/i })
+    const exportBtn = screen.getByRole('button', { name: /export/i })
     fireEvent.click(exportBtn)
 
     const jsonOption = screen.getByRole('button', { name: /json/i })
@@ -86,7 +86,7 @@ describe('ThemeDevToolPanel', () => {
       </ThemeDevToolProvider>
     )
 
-    const exportBtn = screen.getByRole('button', { name: /export theme/i })
+    const exportBtn = screen.getByRole('button', { name: /export/i })
     fireEvent.click(exportBtn)
 
     const tsOption = screen.getByRole('button', { name: /typescript/i })

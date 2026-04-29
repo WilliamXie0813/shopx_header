@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { hexToHsl, deriveColors } from './utils'
+import { hexToHsl, deriveColors } from '../utils'
 
 describe('hexToHsl', () => {
   it('converts #ffffff to { h: 0, s: 0, l: 100 }', () => {

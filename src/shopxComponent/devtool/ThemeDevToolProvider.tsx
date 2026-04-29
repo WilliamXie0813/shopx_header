@@ -1,21 +1,9 @@
-import { createContext, useContext, useState, useMemo, useCallback, type ReactNode } from 'react'
-import { ThemeContext, defaultTheme, type ThemeTokens } from '../theme/ThemeContext'
+import { useState, useMemo, useCallback, type ReactNode } from 'react'
+import { ThemeContext } from '../theme/ThemeContext'
+import { defaultTheme, type ThemeTokens } from '../theme/types'
+import { mergeOverrides } from '../theme/utils'
+import { ThemeDevToolApiContext } from '../theme/devtoolContext'
 import ThemeDevToolPanel from './ThemeDevToolPanel'
-
-interface ThemeDevToolContextValue {
-  overrides: Partial<ThemeTokens>
-  setOverride: (path: string, value: string) => void
-  resetOverrides: () => void
-  importTheme: (theme: ThemeTokens) => void
-}
-
-const ThemeDevToolContext = createContext<ThemeDevToolContextValue | null>(null)
-
-export function useThemeDevTool() {
-  const ctx = useContext(ThemeDevToolContext)
-  if (!ctx) throw new Error('useThemeDevTool must be used within ThemeDevToolProvider')
-  return ctx
-}
 
 function setNestedValue<T extends Record<string, unknown>>(obj: T, path: string, value: string): T {
   const result = { ...obj }
@@ -32,18 +20,6 @@ function setNestedValue<T extends Record<string, unknown>>(obj: T, path: string,
   return result
 }
 
-function mergeOverrides(base: ThemeTokens, overrides: Partial<ThemeTokens>): ThemeTokens {
-  const result = { ...base }
-  for (const key of Object.keys(base) as (keyof ThemeTokens)[]) {
-    const baseValue = base[key]
-    const overrideValue = overrides[key]
-    if (overrideValue && typeof baseValue === 'object' && baseValue !== null) {
-      result[key] = { ...baseValue, ...overrideValue } as ThemeTokens[keyof ThemeTokens]
-    }
-  }
-  return result
-}
-
 function diffTheme(base: ThemeTokens, imported: ThemeTokens): Partial<ThemeTokens> {
   const overrides: Partial<ThemeTokens> = {}
   for (const key of Object.keys(base) as (keyof ThemeTokens)[]) {
@@ -57,7 +33,7 @@ function diffTheme(base: ThemeTokens, imported: ThemeTokens): Partial<ThemeToken
         }
       }
       if (Object.keys(nestedDiff).length > 0) {
-        overrides[key] = nestedDiff as ThemeTokens[keyof ThemeTokens]
+        ;(overrides as Record<string, unknown>)[key] = nestedDiff
       }
     }
   }
@@ -109,11 +85,11 @@ export default function ThemeDevToolProvider({ children }: { children: ReactNode
   )
 
   return (
-    <ThemeDevToolContext.Provider value={contextValue}>
+    <ThemeDevToolApiContext.Provider value={contextValue}>
       <ThemeContext.Provider value={mergedTheme}>
         {children}
+        {import.meta.env.DEV && <ThemeDevToolPanel />}
       </ThemeContext.Provider>
-      {import.meta.env.DEV && <ThemeDevToolPanel />}
-    </ThemeDevToolContext.Provider>
+    </ThemeDevToolApiContext.Provider>
   )
 }

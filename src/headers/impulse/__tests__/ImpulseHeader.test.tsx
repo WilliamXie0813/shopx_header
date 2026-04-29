@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import ImpulseHeader from './ImpulseHeader'
+import ImpulseHeader from '../ImpulseHeader'
 
 describe('ImpulseHeader', () => {
   const defaultProps = {
