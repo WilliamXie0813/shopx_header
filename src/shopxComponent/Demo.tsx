@@ -1,9 +1,8 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { ChevronLeft, ChevronRight, Code } from 'lucide-react'
 import ReactJson from '@microlink/react-json-view'
 import Playground from './Playground'
-import { ThemeProvider } from './theme/ThemeContext'
-import { defaultTheme } from './theme/ThemeContext'
+import { ThemeProvider, useTheme } from './theme/ThemeContext'
 import type { ThemeTokens } from './theme/ThemeContext'
 import {
   CenteredHeader,
@@ -68,18 +67,20 @@ const megaNavigation = [
   { label: 'Deals', href: '/deals' },
 ]
 
-const darkTheme: ThemeTokens = {
-  ...defaultTheme,
-  colors: {
-    ...defaultTheme.colors,
-    background: '#0a0a0a',
-    surface: '#141414',
-    text: '#f5f3ef',
-    textSecondary: '#888888',
-    textInverse: '#f5f3ef',
-    primary: '#c9a96e',
-    border: '#2a2a2a',
-  },
+function makeDarkTheme(base: ThemeTokens): ThemeTokens {
+  return {
+    ...base,
+    colors: {
+      ...base.colors,
+      background: '#0a0a0a',
+      surface: '#141414',
+      text: '#f5f3ef',
+      textSecondary: '#888888',
+      textInverse: '#f5f3ef',
+      primary: '#c9a96e',
+      border: '#2a2a2a',
+    },
+  }
 }
 
 function makeConfig(variant: string, showSearch: boolean, navigation: typeof demoNavigation): HeaderConfig {
@@ -96,7 +97,6 @@ interface Slide {
   title: string
   subtitle: string
   bg: string
-  theme: ThemeTokens
   nav: typeof demoNavigation
   render: (config: HeaderConfig) => React.ReactNode
 }
@@ -219,7 +219,6 @@ const slides: Slide[] = [
     title: 'CenteredHeader',
     subtitle: 'Logo centered, symmetric navigation layout',
     bg: '#ffffff',
-    theme: defaultTheme,
     nav: demoNavigation,
     render: (config) => <CenteredHeader config={config} />,
   },
@@ -228,7 +227,6 @@ const slides: Slide[] = [
     title: 'FloatingHeader',
     subtitle: 'Floating card with shadow & rounded corners',
     bg: '#f1f5f9',
-    theme: defaultTheme,
     nav: demoNavigation,
     render: (config) => <FloatingHeader config={config} />,
   },
@@ -237,7 +235,6 @@ const slides: Slide[] = [
     title: 'LuxeValutHeader',
     subtitle: 'Dark luxury theme with gold accents',
     bg: '#0a0a0a',
-    theme: darkTheme,
     nav: demoNavigation,
     render: (config) => <LuxeValutHeader config={config} />,
   },
@@ -246,7 +243,6 @@ const slides: Slide[] = [
     title: 'MegaHeader',
     subtitle: 'Full-width mega dropdown menu',
     bg: '#ffffff',
-    theme: defaultTheme,
     nav: megaNavigation,
     render: (config) => <MegaHeader config={config} />,
   },
@@ -255,7 +251,6 @@ const slides: Slide[] = [
     title: 'MarketplaceHeader',
     subtitle: 'E-commerce style with category pills & big search',
     bg: '#ffffff',
-    theme: defaultTheme,
     nav: demoNavigation,
     render: (config) => <MarketplaceHeader config={config} />,
   },
@@ -264,7 +259,6 @@ const slides: Slide[] = [
     title: 'StickyCompactHeader',
     subtitle: 'Fixed sticky header that compacts on scroll',
     bg: '#f8fafc',
-    theme: defaultTheme,
     nav: demoNavigation,
     render: (config) => <StickyCompactHeader config={config} />,
   },
@@ -300,12 +294,18 @@ function SkeletonGrid({ isDark }: { isDark: boolean }) {
 }
 
 export default function Demo() {
+  const baseTheme = useTheme()
   const [current, setCurrent] = useState(0)
   const [transitioning, setTransitioning] = useState(false)
   const [mode, setMode] = useState<'carousel' | 'playground'>('carousel')
   const total = slides.length
   const slide = slides[current]
   const isDark = slide.bg === '#0a0a0a'
+
+  const slideTheme = useMemo(
+    () => (slide.id === 'luxe' ? makeDarkTheme(baseTheme) : baseTheme),
+    [slide, baseTheme]
+  )
 
   const changeSlide = useCallback((next: number) => {
     if (transitioning) return
@@ -340,7 +340,7 @@ export default function Demo() {
       className="h-screen w-screen overflow-hidden relative flex flex-col transition-colors duration-300"
       style={{ backgroundColor: slide.bg }}
     >
-      <ConfigPanel config={config} theme={slide.theme} isDark={isDark} />
+      <ConfigPanel config={config} theme={slideTheme} isDark={isDark} />
 
       {/* Decorative page number */}
       <div
@@ -348,7 +348,7 @@ export default function Demo() {
         style={{
           color: isDark ? '#ffffff' : '#000000',
           opacity: isDark ? 0.035 : 0.03,
-          fontFamily: defaultTheme.typography.fontFamily.heading,
+          fontFamily: baseTheme.typography.fontFamily.heading,
         }}
       >
         {String(current + 1).padStart(2, '0')}
@@ -375,7 +375,7 @@ export default function Demo() {
           className="text-3xl font-bold tracking-tight"
           style={{
             color: isDark ? '#f5f3ef' : '#0f172a',
-            fontFamily: defaultTheme.typography.fontFamily.heading,
+            fontFamily: baseTheme.typography.fontFamily.heading,
           }}
         >
           {slide.title}
@@ -414,7 +414,7 @@ export default function Demo() {
             className="flex-none px-8 transition-opacity duration-150"
             style={{ opacity: transitioning ? 0 : 1 }}
           >
-            <ThemeProvider theme={slide.theme}>
+            <ThemeProvider theme={slideTheme}>
               {slide.render(config)}
             </ThemeProvider>
           </div>

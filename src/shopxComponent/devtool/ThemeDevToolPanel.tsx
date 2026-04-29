@@ -43,8 +43,11 @@ export default function ThemeDevToolPanel({ initialOpen = false }: { initialOpen
   const [isOpen, setIsOpen] = useState(initialOpen)
   const [showExportMenu, setShowExportMenu] = useState(false)
   const theme = useTheme()
-  const { setOverride, resetOverrides } = useThemeDevTool()
+  const { setOverride, resetOverrides, importTheme } = useThemeDevTool()
   const exportMenuRef = useRef<HTMLDivElement>(null)
+  const [showImportPanel, setShowImportPanel] = useState(false)
+  const [importText, setImportText] = useState('')
+  const [importError, setImportError] = useState('')
 
   // Drag state
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
@@ -110,6 +113,18 @@ export default function ThemeDevToolPanel({ initialOpen = false }: { initialOpen
     [theme]
   )
 
+  const handleImport = useCallback(() => {
+    setImportError('')
+    try {
+      const parsed = JSON.parse(importText) as ThemeTokens
+      importTheme(parsed)
+      setShowImportPanel(false)
+      setImportText('')
+    } catch {
+      setImportError('Invalid JSON format')
+    }
+  }, [importText, importTheme])
+
   if (!isOpen) {
     return (
       <button
@@ -164,12 +179,65 @@ export default function ThemeDevToolPanel({ initialOpen = false }: { initialOpen
         </button>
       </div>
 
-      {/* Token Editor */}
+      {/* Token Editor or Import Panel */}
       <div className="flex-1 overflow-hidden text-white">
-        <TokenEditor
-          theme={theme}
-          onChange={setOverride}
-        />
+        {showImportPanel ? (
+          <div className="h-full flex flex-col px-4 py-4">
+            <div className="text-xs font-semibold mb-2" style={{ color: '#94a3b8' }}>
+              Paste Theme JSON
+            </div>
+            <textarea
+              value={importText}
+              onChange={(e) => {
+                setImportText(e.target.value)
+                setImportError('')
+              }}
+              placeholder={`{\n  "colors": {\n    "primary": "#3b82f6"\n  }\n}`}
+              className="flex-1 min-h-0 text-xs px-3 py-2 rounded-lg border resize-none font-mono"
+              style={{
+                backgroundColor: '#0f172a',
+                borderColor: 'rgba(255,255,255,0.15)',
+                color: '#e2e8f0',
+              }}
+            />
+            {importError && (
+              <div className="text-[11px] mt-2" style={{ color: '#ef4444' }}>
+                {importError}
+              </div>
+            )}
+            <div className="flex gap-2 mt-3">
+              <button
+                onClick={() => {
+                  setShowImportPanel(false)
+                  setImportText('')
+                  setImportError('')
+                }}
+                className="flex-1 text-xs font-medium px-3 py-2 rounded-lg transition-colors"
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  color: 'rgba(255,255,255,0.7)',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleImport}
+                className="flex-1 text-xs font-medium px-3 py-2 rounded-lg transition-colors"
+                style={{
+                  backgroundColor: '#3b82f6',
+                  color: '#ffffff',
+                }}
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+        ) : (
+          <TokenEditor
+            theme={theme}
+            onChange={setOverride}
+          />
+        )}
       </div>
 
       {/* Bottom toolbar */}
@@ -184,6 +252,16 @@ export default function ThemeDevToolPanel({ initialOpen = false }: { initialOpen
         >
           Reset
         </button>
+        <button
+          onClick={() => setShowImportPanel((v) => !v)}
+          className="text-xs font-medium px-3 py-2 rounded-lg transition-colors"
+          style={{
+            backgroundColor: 'rgba(255,255,255,0.1)',
+            color: 'rgba(255,255,255,0.7)',
+          }}
+        >
+          Import
+        </button>
         <div className="relative" ref={exportMenuRef}>
           <button
             onClick={() => setShowExportMenu((v) => !v)}
@@ -193,7 +271,7 @@ export default function ThemeDevToolPanel({ initialOpen = false }: { initialOpen
               color: '#ffffff',
             }}
           >
-            Export Theme
+            Export
           </button>
           {showExportMenu && (
             <div

@@ -6,6 +6,7 @@ interface ThemeDevToolContextValue {
   overrides: Partial<ThemeTokens>
   setOverride: (path: string, value: string) => void
   resetOverrides: () => void
+  importTheme: (theme: ThemeTokens) => void
 }
 
 const ThemeDevToolContext = createContext<ThemeDevToolContextValue | null>(null)
@@ -43,6 +44,26 @@ function mergeOverrides(base: ThemeTokens, overrides: Partial<ThemeTokens>): The
   return result
 }
 
+function diffTheme(base: ThemeTokens, imported: ThemeTokens): Partial<ThemeTokens> {
+  const overrides: Partial<ThemeTokens> = {}
+  for (const key of Object.keys(base) as (keyof ThemeTokens)[]) {
+    const baseValue = base[key]
+    const importedValue = imported[key]
+    if (typeof baseValue === 'object' && baseValue !== null && importedValue) {
+      const nestedDiff: Record<string, unknown> = {}
+      for (const nestedKey of Object.keys(baseValue)) {
+        if ((baseValue as Record<string, unknown>)[nestedKey] !== (importedValue as Record<string, unknown>)[nestedKey]) {
+          nestedDiff[nestedKey] = (importedValue as Record<string, unknown>)[nestedKey]
+        }
+      }
+      if (Object.keys(nestedDiff).length > 0) {
+        overrides[key] = nestedDiff as ThemeTokens[keyof ThemeTokens]
+      }
+    }
+  }
+  return overrides
+}
+
 export default function ThemeDevToolProvider({ children }: { children: ReactNode }) {
   const [overrides, setOverrides] = useState<Partial<ThemeTokens>>({})
 
@@ -78,9 +99,13 @@ export default function ThemeDevToolProvider({ children }: { children: ReactNode
     setOverrides({})
   }, [])
 
+  const importTheme = useCallback((theme: ThemeTokens) => {
+    setOverrides(diffTheme(defaultTheme, theme))
+  }, [])
+
   const contextValue = useMemo(
-    () => ({ overrides, setOverride, resetOverrides }),
-    [overrides, setOverride, resetOverrides]
+    () => ({ overrides, setOverride, resetOverrides, importTheme }),
+    [overrides, setOverride, resetOverrides, importTheme]
   )
 
   return (
