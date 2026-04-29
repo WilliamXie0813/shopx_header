@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
-import { X, Palette } from 'lucide-react'
+import { X, Palette, GripHorizontal } from 'lucide-react'
 import TokenEditor from './TokenEditor'
 import useKeyboardShortcut from './useKeyboardShortcut'
 import { useThemeDevTool } from './ThemeDevToolProvider'
@@ -46,8 +46,42 @@ export default function ThemeDevToolPanel({ initialOpen = false }: { initialOpen
   const { setOverride, resetOverrides } = useThemeDevTool()
   const exportMenuRef = useRef<HTMLDivElement>(null)
 
+  // Drag state
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const [isDragging, setIsDragging] = useState(false)
+  const dragStartRef = useRef({ mouseX: 0, mouseY: 0, offsetX: 0, offsetY: 0 })
+
   const toggle = useCallback(() => setIsOpen((v) => !v), [])
   const close = useCallback(() => setIsOpen(false), [])
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    dragStartRef.current = {
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+      offsetX: dragOffset.x,
+      offsetY: dragOffset.y,
+    }
+    setIsDragging(true)
+  }, [dragOffset])
+
+  useEffect(() => {
+    if (!isDragging) return
+    const handleMouseMove = (e: MouseEvent) => {
+      const dx = e.clientX - dragStartRef.current.mouseX
+      const dy = e.clientY - dragStartRef.current.mouseY
+      setDragOffset({
+        x: dragStartRef.current.offsetX + dx,
+        y: dragStartRef.current.offsetY + dy,
+      })
+    }
+    const handleMouseUp = () => setIsDragging(false)
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isDragging])
 
   useKeyboardShortcut({ onToggle: toggle, onClose: close })
 
@@ -100,16 +134,22 @@ export default function ThemeDevToolPanel({ initialOpen = false }: { initialOpen
       style={{
         right: '16px',
         bottom: '16px',
-        width: '320px',
+        width: '480px',
         maxHeight: '90vh',
+        transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)`,
         backgroundColor: 'rgba(15, 23, 42, 0.95)',
         backdropFilter: 'blur(12px)',
         border: '1px solid rgba(255,255,255,0.1)',
       }}
     >
       {/* Title bar */}
-      <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+      <div
+        className="flex items-center justify-between px-4 py-3 border-b cursor-grab active:cursor-grabbing select-none"
+        style={{ borderColor: 'rgba(255,255,255,0.1)' }}
+        onMouseDown={handleMouseDown}
+      >
         <div className="flex items-center gap-2">
+          <GripHorizontal size={14} className="text-white/40" />
           <span className="text-xs font-semibold text-white">Theme DevTool</span>
           <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/60">
             {shortcutHint}
