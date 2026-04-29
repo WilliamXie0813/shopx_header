@@ -101,7 +101,7 @@ export const defaultTheme: ThemeTokens = {
   },
 }
 
-const ThemeContext = createContext<ThemeTokens>(defaultTheme)
+export const ThemeContext = createContext<ThemeTokens>(defaultTheme)
 
 export function ThemeProvider({
   theme = defaultTheme,
