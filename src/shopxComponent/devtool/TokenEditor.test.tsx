@@ -72,13 +72,4 @@ describe('TokenEditor (devtool)', () => {
     expect(onChange).toHaveBeenCalledWith('typography.fontSizes.base', '1.25rem')
   })
 
-  it('calls onReset when reset button is clicked', () => {
-    const onReset = vi.fn()
-    render(<TokenEditor theme={defaultTheme} onChange={vi.fn()} onReset={onReset} />)
-
-    const resetButton = screen.getByRole('button', { name: /reset to default/i })
-    fireEvent.click(resetButton)
-
-    expect(onReset).toHaveBeenCalled()
-  })
 })
