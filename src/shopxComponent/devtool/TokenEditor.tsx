@@ -5,7 +5,6 @@ import type { ThemeTokens } from '../theme/ThemeContext'
 interface TokenEditorProps {
   theme: ThemeTokens
   onChange: (path: string, value: string) => void
-  onReset: () => void
 }
 
 const colorKeys: { key: keyof ThemeTokens['colors']; label: string }[] = [
@@ -32,6 +31,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     <section>
       <button
         onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
         className="w-full flex items-center justify-between py-2"
       >
         <h3 className="text-[10px] font-bold uppercase tracking-wider" style={{ color: '#64748b' }}>
@@ -76,7 +76,7 @@ function TextField({
   )
 }
 
-export default function TokenEditor({ theme, onChange, onReset }: TokenEditorProps) {
+export default function TokenEditor({ theme, onChange }: TokenEditorProps) {
   return (
     <div className="h-full flex flex-col">
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">

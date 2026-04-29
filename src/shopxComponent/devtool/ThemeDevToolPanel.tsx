@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { X } from 'lucide-react'
 import TokenEditor from './TokenEditor'
 import useKeyboardShortcut from './useKeyboardShortcut'
@@ -44,11 +44,23 @@ export default function ThemeDevToolPanel({ initialOpen = false }: { initialOpen
   const [showExportMenu, setShowExportMenu] = useState(false)
   const theme = useTheme()
   const { setOverride, resetOverrides } = useThemeDevTool()
+  const exportMenuRef = useRef<HTMLDivElement>(null)
 
   const toggle = useCallback(() => setIsOpen((v) => !v), [])
   const close = useCallback(() => setIsOpen(false), [])
 
   useKeyboardShortcut({ onToggle: toggle, onClose: close })
+
+  useEffect(() => {
+    if (!showExportMenu) return
+    const handleClick = (e: MouseEvent) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target as Node)) {
+        setShowExportMenu(false)
+      }
+    }
+    document.addEventListener('click', handleClick)
+    return () => document.removeEventListener('click', handleClick)
+  }, [showExportMenu])
 
   const shortcutHint = useMemo(() => getShortcutHint(), [])
 
@@ -101,7 +113,6 @@ export default function ThemeDevToolPanel({ initialOpen = false }: { initialOpen
         <TokenEditor
           theme={theme}
           onChange={setOverride}
-          onReset={resetOverrides}
         />
       </div>
 
@@ -117,7 +128,7 @@ export default function ThemeDevToolPanel({ initialOpen = false }: { initialOpen
         >
           Reset
         </button>
-        <div className="relative">
+        <div className="relative" ref={exportMenuRef}>
           <button
             onClick={() => setShowExportMenu((v) => !v)}
             className="text-xs font-medium px-3 py-2 rounded-lg transition-colors"
