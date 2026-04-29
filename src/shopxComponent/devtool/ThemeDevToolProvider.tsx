@@ -16,7 +16,7 @@ export function useThemeDevTool() {
   return ctx
 }
 
-function setNestedValue(obj: Record<string, unknown>, path: string, value: string): Record<string, unknown> {
+function setNestedValue<T extends Record<string, unknown>>(obj: T, path: string, value: string): T {
   const result = { ...obj }
   const keys = path.split('.')
   let current: Record<string, unknown> = result
@@ -32,15 +32,15 @@ function setNestedValue(obj: Record<string, unknown>, path: string, value: strin
 }
 
 function mergeOverrides(base: ThemeTokens, overrides: Partial<ThemeTokens>): ThemeTokens {
-  return {
-    colors: { ...base.colors, ...overrides.colors },
-    typography: {
-      fontFamily: { ...base.typography.fontFamily, ...overrides.typography?.fontFamily },
-      fontSizes: { ...base.typography.fontSizes, ...overrides.typography?.fontSizes },
-    },
-    spacing: { ...base.spacing, ...overrides.spacing },
-    borderRadius: { ...base.borderRadius, ...overrides.borderRadius },
+  const result = { ...base }
+  for (const key of Object.keys(base) as (keyof ThemeTokens)[]) {
+    const baseValue = base[key]
+    const overrideValue = overrides[key]
+    if (overrideValue && typeof baseValue === 'object' && baseValue !== null) {
+      result[key] = { ...baseValue, ...overrideValue } as ThemeTokens[keyof ThemeTokens]
+    }
   }
+  return result
 }
 
 export default function ThemeDevToolProvider({ children }: { children: ReactNode }) {
@@ -66,6 +66,8 @@ export default function ThemeDevToolProvider({ children }: { children: ReactNode
         next.spacing = setNestedValue(next.spacing || {}, restPath, value) as ThemeTokens['spacing']
       } else if (topKey === 'borderRadius') {
         next.borderRadius = setNestedValue(next.borderRadius || {}, restPath, value) as ThemeTokens['borderRadius']
+      } else {
+        throw new Error(`Invalid top-level theme key "${String(topKey)}". Expected one of: colors, typography, spacing, borderRadius.`)
       }
 
       return next

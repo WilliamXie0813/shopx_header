@@ -75,4 +75,94 @@ describe('ThemeDevToolProvider', () => {
     // Panel should not be visible
     expect(screen.queryByText(/theme devtool/i)).not.toBeInTheDocument()
   })
+
+  it('throws when useThemeDevTool is used outside ThemeDevToolProvider', () => {
+    function RogueConsumer() {
+      useThemeDevTool()
+      return <div />
+    }
+
+    // Suppress console.error for expected throw
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    expect(() => render(<RogueConsumer />)).toThrow('useThemeDevTool must be used within ThemeDevToolProvider')
+    spy.mockRestore()
+  })
+
+  it('applies nested typography.fontFamily.heading override', () => {
+    function FontFamilyConsumer() {
+      const theme = useContext(ThemeContext)
+      return <div data-testid="font-heading">{theme.typography.fontFamily.heading}</div>
+    }
+
+    function FontFamilyButton() {
+      const { setOverride } = useThemeDevTool()
+      return (
+        <button onClick={() => setOverride('typography.fontFamily.heading', 'Arial')}>
+          Change Font
+        </button>
+      )
+    }
+
+    render(
+      <ThemeDevToolProvider>
+        <FontFamilyConsumer />
+        <FontFamilyButton />
+      </ThemeDevToolProvider>
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /change font/i }))
+    expect(screen.getByTestId('font-heading')).toHaveTextContent('Arial')
+  })
+
+  it('applies nested typography.fontSizes.2xl override', () => {
+    function FontSizeConsumer() {
+      const theme = useContext(ThemeContext)
+      return <div data-testid="font-2xl">{theme.typography.fontSizes['2xl']}</div>
+    }
+
+    function FontSizeButton() {
+      const { setOverride } = useThemeDevTool()
+      return (
+        <button onClick={() => setOverride('typography.fontSizes.2xl', '2rem')}>
+          Change Size
+        </button>
+      )
+    }
+
+    render(
+      <ThemeDevToolProvider>
+        <FontSizeConsumer />
+        <FontSizeButton />
+      </ThemeDevToolProvider>
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /change size/i }))
+    expect(screen.getByTestId('font-2xl')).toHaveTextContent('2rem')
+  })
+
+  it('applies nested spacing.md override', () => {
+    function SpacingConsumer() {
+      const theme = useContext(ThemeContext)
+      return <div data-testid="spacing-md">{theme.spacing.md}</div>
+    }
+
+    function SpacingButton() {
+      const { setOverride } = useThemeDevTool()
+      return (
+        <button onClick={() => setOverride('spacing.md', '1.5rem')}>
+          Change Spacing
+        </button>
+      )
+    }
+
+    render(
+      <ThemeDevToolProvider>
+        <SpacingConsumer />
+        <SpacingButton />
+      </ThemeDevToolProvider>
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /change spacing/i }))
+    expect(screen.getByTestId('spacing-md')).toHaveTextContent('1.5rem')
+  })
 })

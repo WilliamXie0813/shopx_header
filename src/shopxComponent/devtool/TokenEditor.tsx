@@ -154,20 +154,6 @@ export default function TokenEditor({ theme, onChange, onReset }: TokenEditorPro
         </Section>
       </div>
 
-      {/* Reset button */}
-      <div className="flex-none px-4 py-3 border-t" style={{ borderColor: '#e2e8f0' }}>
-        <button
-          onClick={onReset}
-          className="w-full text-xs font-medium px-3 py-2 rounded-lg transition-colors"
-          style={{
-            backgroundColor: '#f1f5f9',
-            color: '#64748b',
-            border: '1px solid #e2e8f0',
-          }}
-        >
-          Reset to Default
-        </button>
-      </div>
     </div>
   )
 }
