@@ -144,7 +144,7 @@ function setValueByPath(obj: any, path: string, value: any): any {
 ### 5.1 API
 
 ```ts
-function useEditable(): {
+function useEditable(overridePrefix?: string): {
   bind:  (path: string, options?: BindOptions) => BindProps
   isEditing: boolean
 }
@@ -161,6 +161,11 @@ interface BindProps {
   title?:   string
 }
 ```
+
+**prefix 规则：**
+- 优先使用 `overridePrefix` 参数（子组件场景）
+- 其次读取 `EditablePrefixContext`（`ConfigScope` 包裹时自动提供）
+- 无前缀时，`bind(path)` 的 `path` 即为完整路径
 
 ### 5.2 组件用法
 
@@ -189,17 +194,57 @@ function Header({ config, data }) {
 }
 ```
 
+**路径说明：** `bind()` 接收的是**相对于当前组件 `config` prop** 的相对路径。运行时由 `ConfigScope` 拼接为全局完整路径（如 `header.items[0].label`）。
+
+**子组件传 prefix 示例：**
+
+```tsx
+// Header.tsx
+function Header({ config }) {
+  return <Logo logoConfig={config.logo} parentPath="header.logo" />
+}
+
+// Logo.tsx
+function Logo({ logoConfig, parentPath }) {
+  const { bind } = useEditable(parentPath)
+
+  return (
+    <img
+      src={logoConfig.src}
+      {...bind('src')}           // 完整路径 = header.logo.src
+    />
+  )
+}
+```
+
 ### 5.3 bind 行为
 
-- **preview 模式**：返回空对象 `{}`，零开销
+- **preview 模式**：返回 `{ onClick: () => {} }`，零 DOM 属性（无 `data-editable-path` 和 `className`，React 不渲染到 DOM）
 - **edit 模式**：返回 `{ 'data-editable-path', onClick, className }`，元素出现蓝色虚线边框，点击弹出编辑器
+
+**与已有 props 的合并：**
+
+`{...bind(path)}` 展开时会覆盖元素已有的 `className` 和 `onClick`。如需保留原有值，手动合并：
+
+```tsx
+const editable = bind('items[0].label')
+<span
+  className={cn('existing-class', editable.className)}
+  onClick={(e) => { existingOnClick(e); editable.onClick(e) }}
+  {...editable}
+/>
+```
 
 ### 5.4 改动量
 
 - 每个组件：加 1 行 `const { bind } = useEditable()`
 - 每个可编辑元素：加 `{...bind(path)}` 展开
 
----
+### 5.5 与方案 B 共存规则
+
+推荐 A + B 共存，但同一 JSX 元素**不应同时被插件注入和手动 `bind()`**，否则 `data-editable-path` 和 `onClick` 会重复。
+
+**优先级规则：** 手动 `bind()` 优先级高于插件自动注入。插件在注入前检查目标元素是否已有 `data-editable-path` 属性，有则跳过。
 
 ## 六、方案 B：Vite 插件自动注入
 
@@ -403,6 +448,8 @@ export function __editable(path: string, options?: BindOptions): BindProps {
 支持 editor 类型：
 - `text`：文本输入框，Enter 保存，Escape 取消
 - `color`：原生颜色选择器，选择即保存
+- `image`：图片 URL 输入框 + 预览，Enter 保存
+- `select`：下拉选择器，选项由 `BindOptions` 额外字段提供（预留）
 
 ### 7.3 编辑模式样式
 
@@ -625,3 +672,182 @@ export default defineConfig({
   },
 })
 ```
+
+---
+
+## 附录 A：增量更新 — 插件别名追踪增强
+
+### A.1 背景
+
+当前 6.6 列出的插件限制中，**变量别名**和**解构别名**需降级方案 A 手动绑定。通过增强 AST 分析的 alias tracking，可覆盖 80% 的实际别名使用场景，进一步减少手动绑定工作量。
+
+### A.2 支持的别名级别
+
+| 级别 | 示例 | 复杂度 | 建议 |
+|------|------|--------|------|
+| L1 单层直接别名 | `const a = config.nav; a.items.map(...)` | 低 | **必做** |
+| L2 链式别名 | `const b = a.items; b.map(...)` | 中 | 建议做 |
+| L3 解构别名 | `const { items } = config.nav` | 中 | 建议做 |
+| L4 重新赋值/条件 | `let a = config.nav; if(x) a = config.footer` | 高 | 不做，仍需降级方案 A |
+
+### A.3 AST 实现方案
+
+#### A.3.1 AliasScope 设计
+
+```ts
+interface AliasInfo {
+  name: string           // 变量名
+  path: PathSegment[]    // 对应的 config 路径段
+}
+
+class AliasScope {
+  private aliases = new Map<string, PathSegment[]>()
+
+  register(name: string, path: PathSegment[]): void
+  resolve(name: string): PathSegment[] | null
+  resolveMemberChain(node: MemberExpression): PathSegment[] | null
+}
+```
+
+#### A.3.2 变量声明检测（L1 + L2）
+
+在 `VariableDeclarator` AST 访问器中拦截：
+
+```
+const a = config.navigation
+      ↓
+init 是 MemberExpression，root 为 'config'
+提取路径：['navigation']
+注册别名：a → ['navigation']
+
+const b = a.items
+      ↓
+init.object 'a' 在 alias map 中
+拼接路径：['navigation'] + ['items']
+注册别名：b → ['navigation', 'items']
+```
+
+#### A.3.3 解构检测（L3）
+
+```
+const { items } = config.navigation
+      ↓
+id 是 ObjectPattern，init 是 config MemberExpression
+遍历 properties：
+  items → config.navigation.items
+注册别名：items → ['navigation', 'items']
+```
+
+#### A.3.4 .map() 检测增强
+
+当前逻辑只匹配 `config.xxx.yyy.map()`，增强后增加别名分支：
+
+```
+a.items.map((item, i) => ...)
+↓
+提取 callee object 链：['a', 'items']
+chain[0] !== 'config' → 查 alias scope
+a → ['navigation']
+拼接完整路径：['navigation'] + ['items'] = ['navigation', 'items']
+生成 scope：{ varName: 'item', indexVar: 'i', arrayPath: ['navigation', 'items'] }
+```
+
+### A.4 核心伪代码
+
+```ts
+// ===== 在 Babel traverse 的 VariableDeclarator 访问器中 =====
+
+VariableDeclarator(path) {
+  const { id, init } = path.node
+  if (!init) return
+
+  // ── L1: const a = config.navigation ──
+  if (isConfigMemberExpression(init)) {
+    const segments = extractMemberPath(init) // ['navigation']
+    aliases.set(id.name, segments)
+    return
+  }
+
+  // ── L2: const b = a.items ──
+  if (isMemberExpression(init) && isIdentifier(init.object)) {
+    const base = aliases.get(init.object.name)
+    if (base) {
+      const rest = extractMemberPath(init).slice(1) // 去掉别名本身，取 ['items']
+      aliases.set(id.name, [...base, ...rest])
+    }
+    return
+  }
+
+  // ── L3: const { items } = config.navigation ──
+  if (isObjectPattern(id) && isConfigMemberExpression(init)) {
+    const basePath = extractMemberPath(init)
+    for (const prop of id.properties) {
+      if (isObjectProperty(prop) && isIdentifier(prop.key)) {
+        aliases.set(prop.key.name, [...basePath, prop.key.name])
+      }
+    }
+  }
+}
+
+// ===== 增强的 .map() target 解析 =====
+
+function resolveMapTarget(node: CallExpression): ScopeInfo | null {
+  const callee = node.callee as MemberExpression
+  const obj = callee.object as MemberExpression | Identifier
+
+  // 尝试提取完整属性链
+  const chain = extractMemberChain(obj) // ['a', 'items'] 或 ['config', 'nav', 'items']
+
+  // 情况 1：直接 config 开头
+  if (chain[0] === 'config') {
+    return createScope(chain.slice(1))
+  }
+
+  // 情况 2：别名开头（新增）
+  const aliasPath = aliases.resolve(chain[0])
+  if (aliasPath) {
+    return createScope([...aliasPath, ...chain.slice(1)])
+  }
+
+  return null
+}
+```
+
+### A.5 工作量评估
+
+| 级别 | 新增代码 | 测试用例 | 预计时间 |
+|------|---------|---------|---------|
+| L1 单层别名 | ~30 行 | 4 个 | 2h |
+| L2 链式别名 | +20 行 | 3 个 | 2h |
+| L3 解构别名 | +40 行 | 4 个 | 3h |
+| 合计 | ~90 行 | 11 个 | **~1 天** |
+
+### A.6 仍不支持的情况（需降级方案 A）
+
+即使增强后，以下模式仍超出静态 AST 分析的合理范围：
+
+```tsx
+// ❌ L4：重新赋值 + 条件分支
+let a = config.navigation
+if (someCondition) a = config.footer
+a.items.map(...)      // 运行时才能确定 a 指向谁
+
+// ❌ 跨函数边界（原有）
+const nav = config.navigation
+function renderItem(item) { return <span>{item.label}</span> }
+
+// ❌ 动态 key / 条件路径（原有）
+item[fieldName]
+const label = showAlt ? item.altLabel : item.label
+```
+
+### A.7 增量接入方式
+
+无需改动方案 A/B 的运行时架构，仅在 Vite 插件的 AST 遍历阶段增加 `AliasScope`：
+
+1. 在现有 `ScopeTracker` 旁新增 `AliasTracker`
+2. `enter` Function/BlockStatement 时 push 新的 alias map
+3. `exit` 时 pop，保证作用域隔离
+4. `.map()` 检测前优先查 alias，未命中再按原逻辑处理
+
+兼容现有所有功能，纯增量增强。
