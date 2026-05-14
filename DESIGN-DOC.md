@@ -420,6 +420,93 @@ export function __editable(path: string, options?: BindOptions): BindProps {
 }
 ```
 
+### 7.4 URL 路由控制
+
+生产环境中，编辑功能只应在特定 URL 下启用。通过 URL 自动控制 mode，而不是手动切换 state。
+
+#### 7.4.1 核心机制
+
+`JsonConfigProvider` 初始化 mode 时检测 URL：
+
+```ts
+function resolveDefaultMode(
+  defaultMode?: 'preview' | 'edit',
+): 'preview' | 'edit' {
+  if (defaultMode) return defaultMode
+  if (typeof window !== 'undefined' &&
+      window.location.pathname.startsWith('/preview')) {
+    return 'edit'
+  }
+  return 'preview'
+}
+```
+
+| URL | mode | DOM 表现 |
+|-----|------|----------|
+| `/` | `preview` | 干净，无任何编辑属性 |
+| `/shop` | `preview` | 干净 |
+| `/preview` | `edit` | 元素有 `data-editable-path`、虚线边框 |
+| `/preview/shop` | `edit` | 同上 |
+
+#### 7.4.2 属性完全隐藏
+
+preview 模式下 `__editable` 返回不含任何属性的对象，React 不会渲染到 DOM：
+
+```ts
+function noop(): BindProps {
+  return { onClick: () => {} }
+}
+
+export function __editable(path: string, options?: BindOptions): BindProps {
+  const ctx = useContext(JsonConfigContext)
+  const prefix = useEditablePrefix()
+  const isEditing = ctx?.mode === 'edit'
+
+  if (!isEditing) return noop()
+
+  const fullPath = prefix ? `${prefix}.${path}` : path
+  // 只在编辑模式下才设置 data-editable-path 和 className
+  return {
+    'data-editable-path': fullPath,
+    className: 'shopx-editable',
+    ...
+  }
+}
+```
+
+因为 `noop()` 返回的对象中没有 `data-editable-path` 和 `className` key，展开后 React 不会添加任何 DOM 属性。正常用户查看页面源码时看不到任何编辑系统痕迹。
+
+#### 7.4.3 与路由库集成
+
+React Router 示例：
+
+```ts
+import { useLocation } from 'react-router-dom'
+
+function resolveDefaultMode(): 'preview' | 'edit' {
+  // 在 hook 内无法调用 useLocation，改用硬编码判断
+  return window.location.pathname.startsWith('/preview') ? 'edit' : 'preview'
+}
+```
+
+或通过 `defaultMode` prop 显式传入：
+
+```tsx
+function App() {
+  const location = useLocation()
+  const isPreview = location.pathname.startsWith('/preview')
+
+  return (
+    <JsonConfigProvider
+      initialConfig={pageConfig}
+      defaultMode={isPreview ? 'edit' : 'preview'}
+    >
+      ...
+    </JsonConfigProvider>
+  )
+}
+```
+
 ---
 
 ## 八、页面组装示例
