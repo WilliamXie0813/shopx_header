@@ -223,6 +223,20 @@ code {
 .luxe-panel-open .luxe-item:nth-child(5) { transition-delay: 220ms; }
 .luxe-panel-open .luxe-item:nth-child(6) { transition-delay: 260ms; }
 
+/* ── ShopX Editable ──────────────────────────────────────────── */
+
+.shopx-editable {
+  outline: 2px dashed rgba(59, 130, 246, 0.5);
+  outline-offset: 2px;
+  cursor: pointer;
+  transition: outline-color 150ms ease;
+}
+
+.shopx-editable:hover {
+  outline-color: rgba(59, 130, 246, 1);
+  outline-style: solid;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
 	.dropdown-panel,
