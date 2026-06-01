@@ -1,7 +1,7 @@
-import EditableDemo from "./shopxComponent/EditableDemo";
+import AiEditorDemo from "./shopxComponent/AiEditorDemo";
 
 function App() {
-  return <EditableDemo />;
+  return <AiEditorDemo />;
 }
 
 export default App;
