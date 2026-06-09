@@ -25,7 +25,9 @@ function noop(): BindProps {
  * are relative to the full JSON config root.
  */
 export function __editable(path: string, options?: BindOptions): BindProps {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const ctx = useContext(JsonConfigContext)
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const prefix = useEditablePrefix()
   const fullPath = prefix ? `${prefix}.${path}` : path
   const isEditing = ctx?.mode === 'edit'
@@ -54,7 +56,6 @@ export function __editable(path: string, options?: BindOptions): BindProps {
 
 export function useEditable() {
   const ctx = useContext(JsonConfigContext)
-  const prefix = useEditablePrefix()
   return {
     bind: (path: string, options?: BindOptions): BindProps => {
       if (!ctx || ctx.mode !== 'edit') return noop()

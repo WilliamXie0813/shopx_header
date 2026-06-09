@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, cleanup } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -141,6 +142,35 @@ describe('Copyable', () => {
 
     await vi.waitFor(() => expect(onCopy).toHaveBeenCalled())
   })
+
+  it('uses a non-submit button that is visible on keyboard focus', async () => {
+    const onSubmit = vi.fn((event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+    })
+    render(
+      <form onSubmit={onSubmit}>
+        <Text copyable>Hello</Text>
+      </form>
+    )
+
+    const copyButton = screen.getByRole('button')
+    expect(copyButton).toHaveAttribute('type', 'button')
+    expect(copyButton).toHaveClass('focus-visible:opacity-100')
+
+    await userEvent.click(copyButton)
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+
+  it('notifies callers when copying fails', async () => {
+    const error = new Error('Clipboard denied')
+    const onCopyError = vi.fn()
+    mockWriteText.mockRejectedValueOnce(error)
+
+    render(<Text copyable={{ onCopyError }}>Hello</Text>)
+    await userEvent.click(screen.getByRole('button'))
+
+    await vi.waitFor(() => expect(onCopyError).toHaveBeenCalledWith(error))
+  })
 })
 
 describe('Editable', () => {
@@ -202,17 +232,45 @@ describe('Editable', () => {
     await user.click(screen.getByLabelText('编辑'))
     expect(onStart).toHaveBeenCalled()
   })
+
+  it('uses non-submit buttons for edit controls', async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn((event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+    })
+    render(
+      <form onSubmit={onSubmit}>
+        <Text editable>Hello</Text>
+      </form>
+    )
+
+    const editButton = screen.getByRole('button')
+    expect(editButton).toHaveAttribute('type', 'button')
+
+    await user.click(editButton)
+    screen.getAllByRole('button').forEach((button) => {
+      expect(button).toHaveAttribute('type', 'button')
+    })
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
 })
 
 describe('Ellipsis', () => {
-  it('applies line-clamp-1 by default', () => {
+  it('applies one-line clamp styles by default', () => {
     render(<Text ellipsis>Long text</Text>)
-    expect(screen.getByText('Long text')).toHaveClass('line-clamp-1')
+    expect(screen.getByText('Long text')).toHaveStyle({
+      display: '-webkit-box',
+      WebkitBoxOrient: 'vertical',
+      WebkitLineClamp: '1',
+      overflow: 'hidden',
+    })
   })
 
-  it('applies custom rows', () => {
+  it('applies custom row clamp styles', () => {
     render(<Text ellipsis={{ rows: 3 }}>Long text</Text>)
-    expect(screen.getByText('Long text')).toHaveClass('line-clamp-3')
+    expect(screen.getByText('Long text')).toHaveStyle({
+      WebkitLineClamp: '3',
+    })
   })
 
   it('shows expand button when expandable', async () => {
@@ -220,6 +278,7 @@ describe('Ellipsis', () => {
     render(<Text ellipsis={{ expandable: true }}>Long text</Text>)
 
     const expandButton = screen.getByText('展开')
+    expect(expandButton).toHaveAttribute('type', 'button')
     await user.click(expandButton)
 
     expect(screen.getByText('收起')).toBeInTheDocument()
@@ -232,6 +291,14 @@ describe('Ellipsis', () => {
 
     await user.click(screen.getByText('展开'))
     expect(onExpand).toHaveBeenCalled()
+  })
+
+  it('renders suffix and notifies when ellipsis is applied', async () => {
+    const onEllipsis = vi.fn()
+    render(<Text ellipsis={{ suffix: '...', onEllipsis }}>Long text</Text>)
+
+    expect(screen.getByText('...')).toBeInTheDocument()
+    await vi.waitFor(() => expect(onEllipsis).toHaveBeenCalled())
   })
 })
 
@@ -292,7 +359,14 @@ describe('Link', () => {
 
   it('supports target prop', () => {
     render(<Link href="https://example.com" target="_blank">Click</Link>)
-    expect(screen.getByRole('link')).toHaveAttribute('target', '_blank')
+    const link = screen.getByRole('link')
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+  })
+
+  it('blocks unsafe javascript href values', () => {
+    render(<Link href="javascript:alert(1)">Click</Link>)
+    expect(screen.getByRole('link')).toHaveAttribute('href', '#')
   })
 
   it('supports copyable', async () => {
@@ -302,6 +376,15 @@ describe('Link', () => {
     await userEvent.click(copyButton)
 
     expect(mockWriteText).toHaveBeenCalledWith('Click')
+  })
+
+  it('preserves anchor semantics and ref when editable', () => {
+    const ref = React.createRef<HTMLAnchorElement>()
+    render(<Link href="/profile" editable ref={ref}>Profile</Link>)
+
+    const link = screen.getByRole('link')
+    expect(link).toHaveAttribute('href', '/profile')
+    expect(ref.current).toBe(link)
   })
 })
 

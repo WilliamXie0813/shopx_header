@@ -14,5 +14,5 @@ export interface HeaderConfig {
 
 export interface HeaderProps {
   config: HeaderConfig
-  data?: any
+  data?: unknown
 }

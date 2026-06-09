@@ -11,6 +11,7 @@ export function useAiEditor({ value, onSave, onGenerate, onClose }: InlineAiEdit
   const editorRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setText(value)
   }, [value])
 

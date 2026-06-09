@@ -11,6 +11,7 @@ export default function InlineEditor() {
   useEffect(() => {
     if (editingTarget) {
       const current = getValueByPath(config, editingTarget.path)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setValue(String(current ?? ''))
       inputRef.current?.focus()
     }

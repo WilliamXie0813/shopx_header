@@ -58,7 +58,7 @@ export default function AiEditorDemo() {
     )
   }, [])
 
-  const handleClose = useCallback((_id: string) => {
+  const handleClose = useCallback(() => {
     setActiveId(null)
   }, [])
 

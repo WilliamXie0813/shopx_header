@@ -1,14 +1,10 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import App from '../App'
 
-vi.mock('../shopxComponent/Demo', () => ({
-  default: () => <div data-testid="demo">Demo Content</div>,
-}))
-
 describe('App', () => {
-  it('renders Demo component', () => {
+  it('renders the component demos', () => {
     render(<App />)
-    expect(screen.getByTestId('demo')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Button 组件演示' })).toBeInTheDocument()
   })
 })

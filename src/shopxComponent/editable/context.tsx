@@ -1,5 +1,6 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
-import { getValueByPath, setValueByPath } from './path'
+import { setValueByPath } from './path'
 
 export interface EditingTarget {
   path: string

@@ -44,7 +44,7 @@ function walkMemberChain(
   let current: t.Node = node
 
   while (t.isMemberExpression(current) || t.isOptionalMemberExpression(current)) {
-    const prop = current.property
+    const prop: t.Expression | t.PrivateName = current.property
     if (!t.isIdentifier(prop)) return null
     parts.unshift(prop.name)
     current = current.object

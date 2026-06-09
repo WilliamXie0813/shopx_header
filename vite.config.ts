@@ -15,6 +15,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
+      '@': path.resolve(__dirname, './src'),
       '@shopx/editable': path.resolve(__dirname, 'src/shopxComponent/editable/runtime'),
     },
   },
