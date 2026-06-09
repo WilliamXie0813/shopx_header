@@ -285,6 +285,53 @@ function EditableAction({
   )
 }
 
+// ============================== Ellipsis ==============================
+
+function EllipsisWrapper({
+  config,
+  children,
+}: {
+  config?: EllipsisConfig | boolean
+  children: React.ReactNode
+}) {
+  const resolvedConfig = typeof config === 'boolean' ? {} : config || {}
+  const rows = resolvedConfig.rows || 1
+  const [expanded, setExpanded] = React.useState(false)
+
+  if (expanded) {
+    return (
+      <>
+        {children}
+        {resolvedConfig.expandable && (
+          <button
+            onClick={() => setExpanded(false)}
+            className="inline-flex items-center ml-1 text-primary cursor-pointer hover:underline"
+          >
+            {resolvedConfig.symbol || '收起'}
+          </button>
+        )}
+      </>
+    )
+  }
+
+  return (
+    <span className={`inline-flex flex-wrap items-center ${expanded ? '' : `line-clamp-${rows}`}`}>
+      <span className={expanded ? '' : `line-clamp-${rows}`}>{children}</span>
+      {resolvedConfig.expandable && (
+        <button
+          onClick={() => {
+            setExpanded(true)
+            resolvedConfig.onExpand?.()
+          }}
+          className="inline-flex items-center ml-1 text-primary cursor-pointer hover:underline shrink-0"
+        >
+          {resolvedConfig.symbol || '展开'}
+        </button>
+      )}
+    </span>
+  )
+}
+
 // ============================== Text ==============================
 
 export interface TextProps extends BaseTypographyProps {
@@ -294,7 +341,7 @@ export interface TextProps extends BaseTypographyProps {
 }
 
 export const Text = React.forwardRef<HTMLSpanElement, TextProps>(
-  ({ className, copyable, editable, children, ...props }, ref) => {
+  ({ className, copyable, editable, ellipsis, children, ...props }, ref) => {
     const [displayValue, setDisplayValue] = React.useState(
       typeof children === 'string' ? children : ''
     )
@@ -306,6 +353,8 @@ export const Text = React.forwardRef<HTMLSpanElement, TextProps>(
     }, [children])
 
     const textString = typeof children === 'string' ? children : ''
+    const resolvedEllipsis = typeof ellipsis === 'boolean' ? {} : ellipsis || {}
+    const rows = resolvedEllipsis.rows || 1
 
     if (editable) {
       return (
@@ -319,9 +368,19 @@ export const Text = React.forwardRef<HTMLSpanElement, TextProps>(
       )
     }
 
+    const content = (
+      <BaseTypography {...props} className={cn(ellipsis && !resolvedEllipsis.expandable && `line-clamp-${rows}`, className)}>
+        {children}
+      </BaseTypography>
+    )
+
     return (
       <span ref={ref} className="group inline-flex items-center">
-        <BaseTypography {...props} className={className}>{children}</BaseTypography>
+        {ellipsis ? (
+          <EllipsisWrapper config={ellipsis}>{content}</EllipsisWrapper>
+        ) : (
+          content
+        )}
         {copyable && textString && <CopyableAction text={textString} config={copyable} />}
       </span>
     )

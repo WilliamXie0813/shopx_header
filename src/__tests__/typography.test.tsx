@@ -203,3 +203,34 @@ describe('Editable', () => {
     expect(onStart).toHaveBeenCalled()
   })
 })
+
+describe('Ellipsis', () => {
+  it('applies line-clamp-1 by default', () => {
+    render(<Text ellipsis>Long text</Text>)
+    expect(screen.getByText('Long text')).toHaveClass('line-clamp-1')
+  })
+
+  it('applies custom rows', () => {
+    render(<Text ellipsis={{ rows: 3 }}>Long text</Text>)
+    expect(screen.getByText('Long text')).toHaveClass('line-clamp-3')
+  })
+
+  it('shows expand button when expandable', async () => {
+    const user = userEvent.setup()
+    render(<Text ellipsis={{ expandable: true }}>Long text</Text>)
+
+    const expandButton = screen.getByText('展开')
+    await user.click(expandButton)
+
+    expect(screen.getByText('收起')).toBeInTheDocument()
+  })
+
+  it('calls onExpand callback', async () => {
+    const user = userEvent.setup()
+    const onExpand = vi.fn()
+    render(<Text ellipsis={{ expandable: true, onExpand }}>Long text</Text>)
+
+    await user.click(screen.getByText('展开'))
+    expect(onExpand).toHaveBeenCalled()
+  })
+})
