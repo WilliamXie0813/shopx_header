@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, cleanup } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { Title, Text, Paragraph } from '@/components/ui/typography'
+import { Title, Text, Paragraph, Link } from '@/components/ui/typography'
 
 const mockWriteText = navigator.clipboard.writeText as ReturnType<typeof vi.fn>
 
@@ -236,6 +236,11 @@ describe('Ellipsis', () => {
 })
 
 describe('Paragraph', () => {
+  beforeEach(() => {
+    mockWriteText.mockClear()
+    cleanup()
+  })
+
   it('renders p tag', () => {
     const { container } = render(<Paragraph>Content</Paragraph>)
     expect(container.querySelector('p')).toHaveTextContent('Content')
@@ -252,11 +257,10 @@ describe('Paragraph', () => {
   })
 
   it('supports copyable', async () => {
-    const user = userEvent.setup()
     render(<Paragraph copyable>Hello</Paragraph>)
 
     const copyButton = screen.getByLabelText('复制')
-    await user.click(copyButton)
+    await userEvent.click(copyButton)
 
     expect(mockWriteText).toHaveBeenCalledWith('Hello')
   })
@@ -267,5 +271,36 @@ describe('Paragraph', () => {
 
     await user.click(screen.getByLabelText('编辑'))
     expect(screen.getByRole('textbox')).toHaveValue('Hello')
+  })
+})
+
+describe('Link', () => {
+  beforeEach(() => {
+    mockWriteText.mockClear()
+    cleanup()
+  })
+
+  it('renders a tag with href', () => {
+    render(<Link href="https://example.com">Click</Link>)
+    expect(screen.getByRole('link')).toHaveAttribute('href', 'https://example.com')
+  })
+
+  it('applies link styling', () => {
+    render(<Link href="https://example.com">Click</Link>)
+    expect(screen.getByRole('link')).toHaveClass('text-primary', 'hover:underline')
+  })
+
+  it('supports target prop', () => {
+    render(<Link href="https://example.com" target="_blank">Click</Link>)
+    expect(screen.getByRole('link')).toHaveAttribute('target', '_blank')
+  })
+
+  it('supports copyable', async () => {
+    render(<Link href="https://example.com" copyable>Click</Link>)
+
+    const copyButton = screen.getByLabelText('复制')
+    await userEvent.click(copyButton)
+
+    expect(mockWriteText).toHaveBeenCalledWith('Click')
   })
 })

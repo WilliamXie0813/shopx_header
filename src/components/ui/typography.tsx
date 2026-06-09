@@ -446,3 +446,76 @@ export const Paragraph = React.forwardRef<HTMLParagraphElement, ParagraphProps>(
   }
 )
 Paragraph.displayName = 'Paragraph'
+
+// ============================== Link ==============================
+
+export interface LinkProps extends BaseTypographyProps {
+  href: string
+  target?: string
+  copyable?: boolean | CopyConfig
+  editable?: boolean | EditConfig
+  ellipsis?: boolean | EllipsisConfig
+}
+
+export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(
+  ({ href, target, className, copyable, editable, ellipsis, children, ...props }, ref) => {
+    const [displayValue, setDisplayValue] = React.useState(
+      typeof children === 'string' ? children : ''
+    )
+
+    React.useEffect(() => {
+      if (typeof children === 'string') {
+        setDisplayValue(children)
+      }
+    }, [children])
+
+    const textString = typeof children === 'string' ? children : ''
+    const resolvedEllipsis = typeof ellipsis === 'boolean' ? {} : ellipsis || {}
+    const rows = resolvedEllipsis.rows || 1
+
+    if (editable) {
+      return (
+        <span ref={ref as React.Ref<HTMLSpanElement>} className={cn('group inline-flex items-center', className)}>
+          <EditableAction
+            value={displayValue}
+            config={editable}
+            onSave={setDisplayValue}
+          />
+        </span>
+      )
+    }
+
+    const content = (
+      <a
+        ref={ref}
+        href={href}
+        target={target}
+        className={cn('text-primary hover:underline cursor-pointer', className)}
+      >
+        <BaseTypography
+          {...props}
+          className={cn(ellipsis && !resolvedEllipsis.expandable && `line-clamp-${rows}`)}
+        >
+          {children}
+        </BaseTypography>
+      </a>
+    )
+
+    if (ellipsis) {
+      return (
+        <span className="group inline-flex items-center">
+          <EllipsisWrapper config={ellipsis}>{content}</EllipsisWrapper>
+          {copyable && textString && <CopyableAction text={textString} config={copyable} />}
+        </span>
+      )
+    }
+
+    return (
+      <span className="group inline-flex items-center">
+        {content}
+        {copyable && textString && <CopyableAction text={textString} config={copyable} />}
+      </span>
+    )
+  }
+)
+Link.displayName = 'Link'
