@@ -304,3 +304,27 @@ describe('Link', () => {
     expect(mockWriteText).toHaveBeenCalledWith('Click')
   })
 })
+
+import { Typography } from '@/components/ui/typography'
+
+describe('Typography aggregate export', () => {
+  it('exports Title via Typography.Title', () => {
+    render(<Typography.Title level={2}>Title</Typography.Title>)
+    expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
+  })
+
+  it('exports Text via Typography.Text', () => {
+    render(<Typography.Text type="danger">Text</Typography.Text>)
+    expect(screen.getByText('Text')).toHaveClass('text-red-500')
+  })
+
+  it('exports Paragraph via Typography.Paragraph', () => {
+    const { container } = render(<Typography.Paragraph>Para</Typography.Paragraph>)
+    expect(container.querySelector('p')).toHaveTextContent('Para')
+  })
+
+  it('exports Link via Typography.Link', () => {
+    render(<Typography.Link href="/">Link</Typography.Link>)
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/')
+  })
+})

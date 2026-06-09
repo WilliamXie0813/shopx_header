@@ -519,3 +519,12 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(
   }
 )
 Link.displayName = 'Link'
+
+// ============================== Aggregate Export ==============================
+
+export const Typography = {
+  Title,
+  Text,
+  Paragraph,
+  Link,
+}
