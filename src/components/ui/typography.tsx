@@ -1,5 +1,8 @@
 import * as React from 'react'
 import { cn } from '@/lib/utils'
+import { Copy, Check } from 'lucide-react'
+import { Input } from './input'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip'
 
 export interface TitleProps {
   level?: 1 | 2 | 3 | 4 | 5
@@ -133,6 +136,55 @@ function BaseTypography({
   )
 }
 
+// ============================== Copyable ==============================
+
+function CopyableAction({
+  text,
+  config,
+}: {
+  text: string
+  config?: CopyConfig | boolean
+}) {
+  const [copied, setCopied] = React.useState(false)
+  const resolvedConfig = typeof config === 'boolean' ? {} : config || {}
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(resolvedConfig.text || text)
+      setCopied(true)
+      resolvedConfig.onCopy?.()
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // ignore
+    }
+  }
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={handleCopy}
+            className="inline-flex items-center ml-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+            aria-label={copied ? '已复制' : '复制'}
+          >
+            {copied ? (
+              <Check className="h-3.5 w-3.5 text-green-600" />
+            ) : (
+              resolvedConfig.icon || <Copy className="h-3.5 w-3.5" />
+            )}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>
+          {copied
+            ? (resolvedConfig.tooltips?.[1] ?? '已复制')
+            : (resolvedConfig.tooltips?.[0] ?? '复制')}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
+}
+
 // ============================== Text ==============================
 
 export interface TextProps extends BaseTypographyProps {
@@ -142,10 +194,15 @@ export interface TextProps extends BaseTypographyProps {
 }
 
 export const Text = React.forwardRef<HTMLSpanElement, TextProps>(
-  ({ className, ...props }, ref) => {
+  ({ className, copyable, children, ...props }, ref) => {
+    const textString = React.useMemo(() => {
+      return typeof children === 'string' ? children : ''
+    }, [children])
+
     return (
       <span ref={ref} className="group inline-flex items-center">
-        <BaseTypography {...props} className={className} />
+        <BaseTypography {...props} className={className}>{children}</BaseTypography>
+        {copyable && textString && <CopyableAction text={textString} config={copyable} />}
       </span>
     )
   }

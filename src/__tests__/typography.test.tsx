@@ -1,6 +1,9 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { Title, Text } from '@/components/ui/typography'
+
+const mockWriteText = navigator.clipboard.writeText as ReturnType<typeof vi.fn>
 
 describe('Title', () => {
   it('renders h1 by default', () => {
@@ -103,5 +106,39 @@ describe('Text', () => {
   it('merges custom className', () => {
     render(<Text className="custom-class">Text</Text>)
     expect(screen.getByText('Text')).toHaveClass('custom-class')
+  })
+})
+
+describe('Copyable', () => {
+  beforeEach(() => {
+    mockWriteText.mockClear()
+  })
+
+  it('copies text when copy button clicked', async () => {
+    render(<Text copyable>Hello</Text>)
+
+    const copyButton = screen.getByLabelText('复制')
+    await userEvent.click(copyButton)
+
+    expect(mockWriteText).toHaveBeenCalledWith('Hello')
+  })
+
+  it('copies custom text from config', async () => {
+    render(<Text copyable={{ text: 'Custom' }}>Hello</Text>)
+
+    const copyButton = screen.getByLabelText('复制')
+    await userEvent.click(copyButton)
+
+    expect(mockWriteText).toHaveBeenCalledWith('Custom')
+  })
+
+  it('calls onCopy callback after copy', async () => {
+    const onCopy = vi.fn()
+    render(<Text copyable={{ onCopy }}>Hello</Text>)
+
+    const copyButton = screen.getByLabelText('复制')
+    await userEvent.click(copyButton)
+
+    await vi.waitFor(() => expect(onCopy).toHaveBeenCalled())
   })
 })
