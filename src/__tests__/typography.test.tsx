@@ -142,3 +142,64 @@ describe('Copyable', () => {
     await vi.waitFor(() => expect(onCopy).toHaveBeenCalled())
   })
 })
+
+describe('Editable', () => {
+  it('enters edit mode when edit button clicked', async () => {
+    const user = userEvent.setup()
+    render(<Text editable>Hello</Text>)
+
+    const editButton = screen.getByLabelText('编辑')
+    await user.click(editButton)
+
+    expect(screen.getByRole('textbox')).toHaveValue('Hello')
+  })
+
+  it('saves on Enter key', async () => {
+    const user = userEvent.setup()
+    const onEnd = vi.fn()
+    render(<Text editable={{ onEnd }}>Hello</Text>)
+
+    await user.click(screen.getByLabelText('编辑'))
+    const input = screen.getByRole('textbox')
+    await user.clear(input)
+    await user.type(input, 'World')
+    await user.keyboard('{Enter}')
+
+    expect(screen.getByText('World')).toBeInTheDocument()
+    expect(onEnd).toHaveBeenCalled()
+  })
+
+  it('cancels on Escape key', async () => {
+    const user = userEvent.setup()
+    const onCancel = vi.fn()
+    render(<Text editable={{ onCancel }}>Hello</Text>)
+
+    await user.click(screen.getByLabelText('编辑'))
+    const input = screen.getByRole('textbox')
+    await user.type(input, 'World')
+    await user.keyboard('{Escape}')
+
+    expect(screen.getByText('Hello')).toBeInTheDocument()
+    expect(onCancel).toHaveBeenCalled()
+  })
+
+  it('calls onChange when typing', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    render(<Text editable={{ onChange }}>Hello</Text>)
+
+    await user.click(screen.getByLabelText('编辑'))
+    await user.type(screen.getByRole('textbox'), 'W')
+
+    expect(onChange).toHaveBeenLastCalledWith('HelloW')
+  })
+
+  it('calls onStart when entering edit mode', async () => {
+    const user = userEvent.setup()
+    const onStart = vi.fn()
+    render(<Text editable={{ onStart }}>Hello</Text>)
+
+    await user.click(screen.getByLabelText('编辑'))
+    expect(onStart).toHaveBeenCalled()
+  })
+})

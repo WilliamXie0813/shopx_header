@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { cn } from '@/lib/utils'
-import { Copy, Check } from 'lucide-react'
+import { Copy, Check, Pencil, X } from 'lucide-react'
 import { Input } from './input'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip'
 
@@ -185,6 +185,106 @@ function CopyableAction({
   )
 }
 
+// ============================== Editable ==============================
+
+function EditableAction({
+  value,
+  config,
+  onSave,
+}: {
+  value: string
+  config?: EditConfig | boolean
+  onSave: (value: string) => void
+}) {
+  const resolvedConfig = typeof config === 'boolean' ? {} : config || {}
+  const isControlled = resolvedConfig.editing !== undefined
+  const [isEditing, setIsEditing] = React.useState(resolvedConfig.editing || false)
+  const [editValue, setEditValue] = React.useState(value)
+
+  React.useEffect(() => {
+    if (isControlled) {
+      setIsEditing(resolvedConfig.editing || false)
+    }
+  }, [isControlled, resolvedConfig.editing])
+
+  const handleStart = () => {
+    setEditValue(value)
+    setIsEditing(true)
+    resolvedConfig.onStart?.()
+  }
+
+  const handleConfirm = () => {
+    onSave(editValue)
+    if (!isControlled) setIsEditing(false)
+    resolvedConfig.onEnd?.()
+  }
+
+  const handleCancel = () => {
+    setEditValue(value)
+    if (!isControlled) setIsEditing(false)
+    resolvedConfig.onCancel?.()
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleConfirm()
+    if (e.key === 'Escape') handleCancel()
+  }
+
+  if (isEditing) {
+    return (
+      <span className="inline-flex items-center gap-1">
+        <Input
+          value={editValue}
+          onChange={(e) => {
+            setEditValue(e.target.value)
+            resolvedConfig.onChange?.(e.target.value)
+          }}
+          onKeyDown={handleKeyDown}
+          maxLength={resolvedConfig.maxLength}
+          className="h-6 min-w-[120px] inline-flex w-auto py-0 px-1.5 text-sm"
+          autoFocus
+        />
+        <button
+          onClick={handleConfirm}
+          className="inline-flex items-center cursor-pointer"
+          aria-label="确认"
+        >
+          <Check className="h-3.5 w-3.5 text-green-600" />
+        </button>
+        <button
+          onClick={handleCancel}
+          className="inline-flex items-center cursor-pointer"
+          aria-label="取消"
+        >
+          <X className="h-3.5 w-3.5 text-red-500" />
+        </button>
+      </span>
+    )
+  }
+
+  return (
+    <>
+      <span>{value}</span>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={handleStart}
+              className="inline-flex items-center ml-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              aria-label="编辑"
+            >
+              {resolvedConfig.icon || <Pencil className="h-3.5 w-3.5" />}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {resolvedConfig.tooltip || '编辑'}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </>
+  )
+}
+
 // ============================== Text ==============================
 
 export interface TextProps extends BaseTypographyProps {
@@ -194,10 +294,30 @@ export interface TextProps extends BaseTypographyProps {
 }
 
 export const Text = React.forwardRef<HTMLSpanElement, TextProps>(
-  ({ className, copyable, children, ...props }, ref) => {
-    const textString = React.useMemo(() => {
-      return typeof children === 'string' ? children : ''
+  ({ className, copyable, editable, children, ...props }, ref) => {
+    const [displayValue, setDisplayValue] = React.useState(
+      typeof children === 'string' ? children : ''
+    )
+
+    React.useEffect(() => {
+      if (typeof children === 'string') {
+        setDisplayValue(children)
+      }
     }, [children])
+
+    const textString = typeof children === 'string' ? children : ''
+
+    if (editable) {
+      return (
+        <span ref={ref} className={cn('group inline-flex items-center', className)}>
+          <EditableAction
+            value={displayValue}
+            config={editable}
+            onSave={setDisplayValue}
+          />
+        </span>
+      )
+    }
 
     return (
       <span ref={ref} className="group inline-flex items-center">
