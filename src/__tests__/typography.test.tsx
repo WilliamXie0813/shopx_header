@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { Title, Text } from '@/components/ui/typography'
+import { Title, Text, Paragraph } from '@/components/ui/typography'
 
 const mockWriteText = navigator.clipboard.writeText as ReturnType<typeof vi.fn>
 
@@ -232,5 +232,40 @@ describe('Ellipsis', () => {
 
     await user.click(screen.getByText('展开'))
     expect(onExpand).toHaveBeenCalled()
+  })
+})
+
+describe('Paragraph', () => {
+  it('renders p tag', () => {
+    const { container } = render(<Paragraph>Content</Paragraph>)
+    expect(container.querySelector('p')).toHaveTextContent('Content')
+  })
+
+  it('applies paragraph spacing', () => {
+    const { container } = render(<Paragraph>Content</Paragraph>)
+    expect(container.querySelector('p')).toHaveClass('leading-relaxed', 'mb-4')
+  })
+
+  it('applies type color', () => {
+    render(<Paragraph type="danger">Danger</Paragraph>)
+    expect(screen.getByText('Danger')).toHaveClass('text-red-500')
+  })
+
+  it('supports copyable', async () => {
+    const user = userEvent.setup()
+    render(<Paragraph copyable>Hello</Paragraph>)
+
+    const copyButton = screen.getByLabelText('复制')
+    await user.click(copyButton)
+
+    expect(mockWriteText).toHaveBeenCalledWith('Hello')
+  })
+
+  it('supports editable', async () => {
+    const user = userEvent.setup()
+    render(<Paragraph editable>Hello</Paragraph>)
+
+    await user.click(screen.getByLabelText('编辑'))
+    expect(screen.getByRole('textbox')).toHaveValue('Hello')
   })
 })

@@ -387,3 +387,62 @@ export const Text = React.forwardRef<HTMLSpanElement, TextProps>(
   }
 )
 Text.displayName = 'Text'
+
+// ============================== Paragraph ==============================
+
+export interface ParagraphProps extends BaseTypographyProps {
+  copyable?: boolean | CopyConfig
+  editable?: boolean | EditConfig
+  ellipsis?: boolean | EllipsisConfig
+}
+
+export const Paragraph = React.forwardRef<HTMLParagraphElement, ParagraphProps>(
+  ({ className, copyable, editable, ellipsis, children, ...props }, ref) => {
+    const [displayValue, setDisplayValue] = React.useState(
+      typeof children === 'string' ? children : ''
+    )
+
+    React.useEffect(() => {
+      if (typeof children === 'string') {
+        setDisplayValue(children)
+      }
+    }, [children])
+
+    const textString = typeof children === 'string' ? children : ''
+    const resolvedEllipsis = typeof ellipsis === 'boolean' ? {} : ellipsis || {}
+    const rows = resolvedEllipsis.rows || 1
+
+    if (editable) {
+      return (
+        <p ref={ref} className={cn('leading-relaxed mb-4', className)}>
+          <EditableAction
+            value={displayValue}
+            config={editable}
+            onSave={setDisplayValue}
+          />
+        </p>
+      )
+    }
+
+    const content = (
+      <BaseTypography
+        {...props}
+        className={cn(ellipsis && !resolvedEllipsis.expandable && `line-clamp-${rows}`)}
+      >
+        {children}
+      </BaseTypography>
+    )
+
+    return (
+      <p ref={ref} className={cn('leading-relaxed mb-4 group', className)}>
+        {ellipsis ? (
+          <EllipsisWrapper config={ellipsis}>{content}</EllipsisWrapper>
+        ) : (
+          content
+        )}
+        {copyable && textString && <CopyableAction text={textString} config={copyable} />}
+      </p>
+    )
+  }
+)
+Paragraph.displayName = 'Paragraph'
