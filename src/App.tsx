@@ -5,6 +5,7 @@ import ButtonDemo from "./shared/button/ButtonDemo";
 import BadgeDemo from "./shared/badge/BadgeDemo";
 import MessageDemo from "./shared/message/MessageDemo";
 import TreeViewDemo from "./shared/tree-view/TreeViewDemo";
+import GgoggamTreeViewExample from "./examples/ggoggam-treeview/GgoggamTreeViewExample";
 import ModalDemo from "./shared/modal/ModalDemo";
 import NotificationDemo from "./shared/notification/NotificationDemo";
 
@@ -21,6 +22,8 @@ function App() {
             <MessageDemo />
             <hr className="border-border" />
             <TreeViewDemo />
+            <hr className="border-border" />
+            <GgoggamTreeViewExample />
             <hr className="border-border" />
             <ModalDemo />
             <hr className="border-border" />
